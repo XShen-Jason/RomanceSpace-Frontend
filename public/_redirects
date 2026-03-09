@@ -1,0 +1,7 @@
+/*
+  Fix #1 — SPA Routing on Cloudflare Pages
+  Without this file, refreshing on /gallery or /builder returns 404.
+  Cloudflare Pages reads this file and rewrites all paths to index.html,
+  letting React Router handle the routing client-side.
+*/
+/* /index.html 200
