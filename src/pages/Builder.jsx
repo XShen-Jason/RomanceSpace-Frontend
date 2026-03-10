@@ -14,8 +14,11 @@ export default function Builder() {
     const [fieldValues, setFieldValues] = useState({});
     const [loading, setLoading] = useState(false);
     const [fetchError, setFetchError] = useState(null);
-    const [result, setResult] = useState(null);   // { url, previewUrl, isUpdate }
+    const [result, setResult] = useState(null);   // { url, previewUrl }
     const [submitError, setSubmitError] = useState(null);
+
+    // BSR (Browser-Side Rendering) Raw HTML
+    const [rawHtml, setRawHtml] = useState(null);
 
     // Load template list once
     useEffect(() => {
@@ -30,6 +33,25 @@ export default function Builder() {
             })
             .catch((e) => setFetchError(e.message));
     }, [templateName]);
+
+    // Fetch raw HTML when template changes (for BSR Preview)
+    useEffect(() => {
+        if (!selectedTemplate) {
+            setRawHtml(null);
+            return;
+        }
+
+        // Fetch raw HTML from API
+        fetch(import.meta.env.VITE_API_BASE_URL
+            ? `${import.meta.env.VITE_API_BASE_URL}/api/template/raw/${selectedTemplate.name}`
+            : `http://localhost:3000/api/template/raw/${selectedTemplate.name}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch raw template');
+                return res.text();
+            })
+            .then(html => setRawHtml(html))
+            .catch(err => console.error("[BSR Error]", err));
+    }, [selectedTemplate]);
 
     function handleTemplateChange(e) {
         const found = templates.find((t) => t.name === e.target.value) ?? null;
@@ -51,12 +73,22 @@ export default function Builder() {
 
         setLoading(true);
         try {
-            const data = await renderProject({
+            const response = await renderProject({
                 subdomain,
                 type: selectedTemplate.name,
                 data: fieldValues,
             });
-            setResult({ url: data.url, previewUrl: data.previewUrl, isUpdate: data.isUpdate });
+
+            // Render endpoint returns { code: 0, data: { url: ... } }
+            if (response.code !== 0) {
+                throw new Error(response.message || '生成失败');
+            }
+
+            const pageUrl = response.data?.url || `https://${subdomain}.${BASE_DOMAIN}/`;
+            setResult({
+                url: pageUrl,
+                previewUrl: `${pageUrl}?preview=${Date.now()}`
+            });
         } catch (err) {
             setSubmitError(err.message);
         } finally {
@@ -64,93 +96,129 @@ export default function Builder() {
         }
     }
 
+    // --- BSR Real-time Preview Generation ---
+    let previewHtml = '';
+    if (rawHtml && selectedTemplate) {
+        // 1. Inject <base> tag so relative assets resolve perfectly to the CDN
+        const baseTag = `<base href="https://romancespace.885201314.xyz/assets/${selectedTemplate.name}/" />`;
+        previewHtml = rawHtml.replace('<head>', `<head>\n  ${baseTag}`);
+
+        // 2. Simple template engine to replace {{key}} with values or defaults
+        previewHtml = previewHtml.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+            const k = key.trim();
+            // User typed value?
+            if (fieldValues[k] !== undefined && fieldValues[k] !== '') {
+                return fieldValues[k];
+            }
+            return ''; // Leave empty if not typed yet (the schema default logic can be added if fields were objects, but currently fields are just strings)
+        });
+    }
+
     return (
-        <div className="page container">
+        <div className="page container" style={{ maxWidth: 1000 }}>
             <h1 className="section-title">✏️ 创建专属页面</h1>
             <p className="section-sub">填写信息后，系统将即时生成带独立域名的浪漫网页。</p>
 
             {fetchError && <div className="alert alert--error">模板加载失败：{fetchError}</div>}
 
             {result && (
-                <div className="alert alert--success" style={{ maxWidth: 640, margin: '0 auto 1.5rem' }}>
-                    🎉 页面{result.isUpdate ? '更新' : '创建'}成功！
+                <div className="alert alert--success" style={{ margin: '0 auto 1.5rem' }}>
+                    🎉 页面发布成功！
                     <div className="alert__actions">
                         <a href={result.url} target="_blank" rel="noopener noreferrer" className="btn btn--primary btn--sm">
                             访问页面 ↗
                         </a>
                         <a href={result.previewUrl} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm">
-                            即时预览（绕过缓存）
+                            分享预览版（绕过CDN缓存）
                         </a>
                     </div>
                 </div>
             )}
 
             {submitError && (
-                <div className="alert alert--error" style={{ maxWidth: 640, margin: '0 auto 1rem' }}>
+                <div className="alert alert--error" style={{ margin: '0 auto 1rem' }}>
                     {submitError}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="builder-card">
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                {/* Left Panel: Form */}
+                <form onSubmit={handleSubmit} className="builder-card" style={{ flex: '1 1 350px', margin: 0 }}>
 
-                {/* Template selector */}
-                <div className="form-group">
-                    <label htmlFor="template">📦 选择模板</label>
-                    <select
-                        id="template"
-                        value={selectedTemplate?.name ?? ''}
-                        onChange={handleTemplateChange}
-                        required
-                    >
-                        <option value="">-- 请选择 --</option>
-                        {templates.map((t) => (
-                            <option key={t.name} value={t.name}>{t.name}</option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Subdomain */}
-                <div className="form-group">
-                    <label htmlFor="subdomain">🌐 专属子域名</label>
-                    <div className="input-row">
-                        <input
-                            id="subdomain"
-                            type="text"
-                            value={subdomain}
-                            onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                            placeholder="e.g. sweeties"
+                    {/* Template selector */}
+                    <div className="form-group">
+                        <label htmlFor="template">📦 选择模板</label>
+                        <select
+                            id="template"
+                            value={selectedTemplate?.name ?? ''}
+                            onChange={handleTemplateChange}
                             required
-                        />
-                        <span className="input-suffix">.{BASE_DOMAIN}</span>
+                        >
+                            <option value="">-- 请选择 --</option>
+                            {templates.map((t) => (
+                                <option key={t.name} value={t.name}>{t.name}</option>
+                            ))}
+                        </select>
                     </div>
-                </div>
 
-                {/* Dynamic fields from schema */}
-                {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
-                    <>
-                        <hr className="builder-divider" />
-                        <p className="builder-section-label">📝 个性化内容</p>
-                        {selectedTemplate.fields.map((key) => (
-                            <div className="form-group" key={key}>
-                                <label htmlFor={`f-${key}`}>{key}</label>
-                                <textarea
-                                    id={`f-${key}`}
-                                    rows={2}
-                                    value={fieldValues[key] ?? ''}
-                                    onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
-                                    placeholder={`请输入 ${key}`}
-                                />
-                            </div>
-                        ))}
-                    </>
+                    {/* Subdomain */}
+                    <div className="form-group">
+                        <label htmlFor="subdomain">🌐 专属子域名</label>
+                        <div className="input-row">
+                            <input
+                                id="subdomain"
+                                type="text"
+                                value={subdomain}
+                                onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                                placeholder="e.g. sweeties"
+                                required
+                            />
+                            <span className="input-suffix">.{BASE_DOMAIN}</span>
+                        </div>
+                    </div>
+
+                    {/* Dynamic fields from schema */}
+                    {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
+                        <>
+                            <hr className="builder-divider" />
+                            <p className="builder-section-label">📝 个性化内容设置</p>
+                            {selectedTemplate.fields.map((key) => (
+                                <div className="form-group" key={key}>
+                                    <label htmlFor={`f-${key}`}>{key}</label>
+                                    <textarea
+                                        id={`f-${key}`}
+                                        rows={2}
+                                        value={fieldValues[key] ?? ''}
+                                        onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
+                                        placeholder={`请输入 ${key}`}
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    )}
+
+                    <div className="builder-submit">
+                        <button type="submit" className="btn btn--primary" disabled={loading}>
+                            {loading ? '全网生成中...' : '✨ 生成我的专属页面'}
+                        </button>
+                    </div>
+                </form>
+
+                {/* Right Panel: Live Preview iframe (BSR) */}
+                {selectedTemplate && rawHtml && (
+                    <div className="builder-card" style={{ flex: '1 1 400px', margin: 0, padding: 0, height: '600px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>👀 实时预览 (0 延迟)</span>
+                            <span style={{ fontSize: '12px', background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>BSR 引擎</span>
+                        </div>
+                        <iframe
+                            srcDoc={previewHtml}
+                            style={{ flex: 1, width: '100%', border: 'none', background: '#fff' }}
+                            title="Live Preview"
+                        />
+                    </div>
                 )}
-
-                <div className="builder-submit">
-                    <button type="submit" className="btn btn--primary" disabled={loading}>
-                        {loading ? '生成中...' : '✨ 生成我的专属页面'}
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     );
 }

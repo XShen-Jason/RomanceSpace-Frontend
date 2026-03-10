@@ -1,12 +1,17 @@
-/**
- * Centralized API client.
- * - Base URL from VITE_API_BASE_URL (set on Cloudflare Pages Dashboard for prod)
- * - Fix #2: no secrets in source — admin key passed in at call site from sessionStorage
- * - Fix #3: CORS is handled server-side; this client sends the right headers
- * - Fix #4: renderProject is public — no admin key required for end-user creation
- */
-
 const BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+
+/** 
+ * Temporary helper to identity a user across sessions until real Auth is added.
+ * Stores a random UUID in localStorage.
+ */
+function getUserId() {
+    let id = localStorage.getItem('rs_user_id');
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem('rs_user_id', id);
+    }
+    return id;
+}
 
 async function apiFetch(path, options = {}) {
     const res = await fetch(`${BASE}${path}`, {
@@ -35,13 +40,15 @@ export async function listTemplates() {
 /**
  * Render (create/update) a user project page.
  * Public endpoint — accessible by end users, no admin key needed.
- * Rate-limit / abuse protection should be added server-side (Turnstile in P2).
  */
 export async function renderProject(payload) {
     return apiFetch('/api/project/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+            userId: getUserId(), // Automatically attach the unique user ID
+            ...payload
+        }),
     });
 }
 
