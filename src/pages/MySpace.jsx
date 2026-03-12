@@ -12,7 +12,14 @@ export default function MySpace() {
     const [loadingProjects, setLoadingProjects] = useState(true);
     const [generatingCode, setGeneratingCode] = useState(false);
     const [localInviteCode, setLocalInviteCode] = useState(null);
-    const [status, setStatus] = useState({ count: 0, maxDomains: 1, tier: 'free' });
+    const [status, setStatus] = useState({ 
+        count: 0, 
+        maxDomains: 1, 
+        tier: 'free',
+        label: '🌟 体验用户',
+        dailyUsedEdits: 0,
+        maxDailyEdits: 5
+    });
     const [loadingStatus, setLoadingStatus] = useState(true);
 
     // Guard: redirect to auth if not logged in
@@ -129,8 +136,8 @@ export default function MySpace() {
                             {/* Daily Edit Quota */}
                             <div className="quota-group">
                                 <div className="quota-label-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px', fontWeight: 600, color: '#64748b' }}>
-                                    <span>今日修改模板: {status.dailyUsedEdits} / {status.maxDailyEdits}</span>
-                                    <span>{Math.round((status.dailyUsedEdits / status.maxDailyEdits) * 100)}%</span>
+                                    <span>今日修改模板: {status.dailyUsedEdits ?? 0} / {status.maxDailyEdits || 5}</span>
+                                    <span>{Math.round(((status.dailyUsedEdits || 0) / (status.maxDailyEdits || 5)) * 100)}%</span>
                                 </div>
                                 <div className="quota-bar-bg" style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
                                     <div 
