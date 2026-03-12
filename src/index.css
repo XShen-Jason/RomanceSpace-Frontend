@@ -53,7 +53,8 @@ html {
 }
 
 .page {
-    padding: 2rem 0 4rem;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
 }
 
 @media (max-width: 768px) {
@@ -61,7 +62,8 @@ html {
         padding: 0 1.5rem; /* Increased to prevent edge sticking */
     }
     .page {
-        padding: 1.25rem 0 3rem;
+        padding-top: 1.25rem;
+        padding-bottom: 3rem;
     }
 }
 
@@ -112,6 +114,8 @@ html {
         flex-direction: row; /* Horizontal on mobile too */
         gap: 0;
         padding-bottom: 0;
+        padding-left: 1.5rem; /* Match container */
+        padding-right: 1.5rem; /* Match container */
     }
     .navbar__brand {
         font-size: 1.1rem;
@@ -395,7 +399,7 @@ html {
 
 @media (max-width: 768px) {
     .hero {
-        padding: 3.5rem 1rem 3rem;
+        padding: 3.5rem 1.5rem 3rem; /* Match container padding */
     }
     .hero__emoji {
         font-size: 3rem;
@@ -488,14 +492,12 @@ html {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 1rem;
-    background: #f1f5f9;
-    border-radius: 20px;
-    overflow: hidden;
+    padding: 0;
+    background: transparent;
+    border: none;
+    overflow: visible;
     position: sticky;
     top: 100px;
-    height: calc(100vh - 140px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 900px) {
@@ -532,8 +534,8 @@ html {
         position: relative;
         top: 0;
         height: auto;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
+        padding: 0; /* Remove padding to avoid double spacing with .container */
+        margin-bottom: 2rem;
         order: -1; /* Preview on top */
     }
     .builder-card {
