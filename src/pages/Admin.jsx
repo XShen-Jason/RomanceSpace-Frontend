@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { uploadTemplate } from '../api/client.js';
+import { uploadTemplate, syncTemplates } from '../api/client.js';
 
 export default function Admin() {
     const [adminKey, setAdminKey] = useState('');
@@ -37,19 +37,6 @@ export default function Admin() {
         const formData = new FormData();
         formData.append('templateName', templateName);
         files.forEach(file => {
-            // we use webkitRelativePath if available to keep folder structures, otherwise fallback to name
-            const path = file.webkitRelativePath || file.name;
-            // The API expects 'index.html' and 'schema.json' directly, but multer's any() 
-            // uses fieldname or originalname. To be safe, we append them by their relative path.
-            // Wait, the backend looks for f.fieldname === 'index.html'. 
-            // So if it's the root index.html, we should name the field 'index.html'.
-            // For other files, we can use their relative paths as field names so R2 stores them correctly.
-            // If the user drops a folder, webkitRelativePath is "folderName/index.html".
-            // Let's strip the root folder name if all files share it, or simplest: 
-            // just ask user to select all files *inside* the template folder (not the folder itself).
-            // Then file.name is just "index.html" "style.css" "assets/bg.jpg" (if they can select folders within).
-            // Actually, HTML5 file input with webkitdirectory can do folders. 
-            // Let's assume they pick files directly for now.
             formData.append(file.name, file);
         });
 
@@ -61,6 +48,23 @@ export default function Admin() {
             setTemplateName('');
         } catch (err) {
             setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSync = async () => {
+        if (!adminKey) return setError('请输入管理员密钥');
+        setError(null);
+        setSuccess(null);
+        setLoading(true);
+        localStorage.setItem('rs_admin_key', adminKey);
+        
+        try {
+            const res = await syncTemplates(adminKey);
+            setSuccess(`同步成功！共推送了 ${res.count} 个本地模板到 R2 和 KV。`);
+        } catch (err) {
+            setError('同步失败: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -127,7 +131,7 @@ export default function Admin() {
                             {files.length > 0 ? `已选中 ${files.length} 个文件` : "点击或拖拽源文件到此处"}
                         </p>
                         <p style={{ fontSize: '0.8rem', color: '#a0aab2', marginTop: '5px' }}>
-                            必须包含 index.html 和 schema.json
+                            必须包含 index.html 和 config.json (或旧的 schema.json)
                         </p>
                     </div>
 
@@ -143,12 +147,23 @@ export default function Admin() {
                     )}
                 </div>
 
-                <div className="builder-submit" style={{ marginTop: '1.5rem' }}>
-                    <button type="submit" className="btn btn--primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
-                        {loading ? '正在全网发布...' : '🚀 一键发布模板到 R2'}
+                <div className="builder-submit" style={{ marginTop: '1.5rem', display: 'flex', gap: '10px' }}>
+                    <button type="submit" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }} disabled={loading}>
+                        {loading ? '发布中...' : '🚀 一键提交选中文件'}
+                    </button>
+                    <button type="button" onClick={handleSync} className="btn" style={{ flex: 1, justifyContent: 'center', background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }} disabled={loading}>
+                        {loading ? '计算中...' : '🔄 同步本地全量模板'}
                     </button>
                 </div>
             </form>
+            
+            <div className="note" style={{ marginTop: '20px', fontSize: '0.85rem' }}>
+                <strong>💡 两种上传方式说明：</strong>
+                <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
+                    <li><strong>手动模式</strong>：适合你在电脑上选好文件，上传一个全新的或临时的模板。</li>
+                    <li><strong>全量同步</strong>：后端会自动扫描 <code>RomanceSpace-Templates/src</code> 目录，将里面所有的文件夹一次性推送到 R2 和 KV。适合你刚更新完代码，想让云端数据立刻整齐划一。</li>
+                </ul>
+            </div>
         </div>
     );
 }

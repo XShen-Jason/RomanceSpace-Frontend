@@ -81,3 +81,11 @@ export async function getProject(subdomain, adminKey) {
         headers: { 'X-Admin-Key': adminKey },
     });
 }
+
+/** Sync all local templates to R2/KV — admin only. */
+export async function syncTemplates(adminKey) {
+    return apiFetch('/api/template/sync-local', {
+        method: 'POST',
+        headers: { 'X-Admin-Key': adminKey },
+    });
+}
