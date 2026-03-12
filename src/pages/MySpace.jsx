@@ -15,11 +15,18 @@ export default function MySpace() {
     const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
     const [loadingProjects, setLoadingProjects] = useState(true);
+    const [generatingCode, setGeneratingCode] = useState(false);
+    const [localInviteCode, setLocalInviteCode] = useState(null);
 
     // Guard: redirect to auth if not logged in
     useEffect(() => {
         if (!loading && !user) navigate('/auth', { replace: true });
     }, [loading, user, navigate]);
+
+    // Sync local invite code from profile
+    useEffect(() => {
+        if (profile?.invite_code) setLocalInviteCode(profile.invite_code);
+    }, [profile]);
 
     // Load this user's projects from Supabase
     useEffect(() => {
@@ -42,6 +49,26 @@ export default function MySpace() {
         navigate('/');
     }
 
+    /**
+     * Generate an invite code for users who registered before codes were introduced.
+     * Uses the first 8 chars of their UUID.
+     */
+    async function handleGenerateCode() {
+        setGeneratingCode(true);
+        const code = user.id.slice(0, 8).toUpperCase();
+        const { error } = await supabase
+            .from('profiles')
+            .update({ invite_code: code })
+            .eq('id', user.id);
+        if (error) {
+            toast.error('生成失败：' + error.message);
+        } else {
+            setLocalInviteCode(code);
+            toast.success('邀请码已生成！');
+        }
+        setGeneratingCode(false);
+    }
+
     if (loading || !user) {
         return (
             <div className="spinner-wrap">
@@ -51,8 +78,9 @@ export default function MySpace() {
     }
 
     const tierMeta = TIER_LABELS[profile?.tier ?? 'free'];
-    const inviteUrl = profile?.invite_code
-        ? `${window.location.origin}/auth?ref=${profile.invite_code}`
+    const inviteCode = localInviteCode;
+    const inviteUrl = inviteCode
+        ? `${window.location.origin}/auth?ref=${inviteCode}`
         : null;
 
     return (
@@ -76,14 +104,15 @@ export default function MySpace() {
             </div>
 
             {/* ── Invite Code Card ── */}
-            {inviteUrl && (
-                <div className="myspace-section-card">
-                    <h2 className="myspace-section-title">📣 我的推广邀请码</h2>
-                    <p className="myspace-section-desc">
-                        分享以下链接，邀请朋友注册。被邀请者首次发布网页后，你将获得额外修改次数奖励。
-                    </p>
+            <div className="myspace-section-card">
+                <h2 className="myspace-section-title">📣 我的推广邀请码</h2>
+                <p className="myspace-section-desc">
+                    分享以下链接，邀请朋友注册。被邀请者首次发布网页后，你将获得额外修改次数奖励。
+                </p>
+
+                {inviteCode ? (
                     <div className="myspace-invite-box">
-                        <code id="invite-code-display" className="myspace-invite-code">{profile.invite_code}</code>
+                        <code id="invite-code-display" className="myspace-invite-code">{inviteCode}</code>
                         <button
                             id="btn-copy-invite"
                             className="btn btn--outline btn--sm"
@@ -95,8 +124,18 @@ export default function MySpace() {
                             复制链接
                         </button>
                     </div>
-                </div>
-            )}
+                ) : (
+                    <button
+                        id="btn-generate-code"
+                        className="btn btn--outline btn--sm"
+                        onClick={handleGenerateCode}
+                        disabled={generatingCode}
+                        style={{ marginTop: '0.5rem' }}
+                    >
+                        {generatingCode ? '生成中...' : '✨ 生成我的邀请码'}
+                    </button>
+                )}
+            </div>
 
             {/* ── My Projects ── */}
             <div className="myspace-section-card">

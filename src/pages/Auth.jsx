@@ -4,18 +4,21 @@ import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
-/** Single page: handles Register, Login, and Magic Link modes. */
+/**
+ * Single page: handles Register, Login, and Forgot Password modes.
+ * Magic Link removed to conserve email quota.
+ */
 export default function Auth() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { user } = useAuth();
 
-    const [tab, setTab] = useState('login'); // 'login' | 'register' | 'magic'
+    const [tab, setTab] = useState('login'); // 'login' | 'register' | 'forgot'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [inviteCode, setInviteCode] = useState(searchParams.get('ref') ?? '');
     const [loading, setLoading] = useState(false);
-    const [magicSent, setMagicSent] = useState(false);
+    const [forgotSent, setForgotSent] = useState(false);
 
     // If already logged in, redirect to MySpace
     useEffect(() => {
@@ -37,24 +40,34 @@ export default function Auth() {
     async function handleRegister(e) {
         e.preventDefault();
         setLoading(true);
+
+        // Pre-check: try to find an existing profile with this email via auth
+        // (Supabase signUp returns an identities[] array that is empty for existing confirmed users)
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 // After email verification, redirect to our callback page.
-                // This works cross-device (PC registers, mobile clicks link → lands here).
                 emailRedirectTo: `${window.location.origin}/auth/callback`,
             },
         });
+
         if (error) {
             toast.error(error.message);
             setLoading(false);
             return;
         }
 
+        // If identities is empty, the email is already registered
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+            toast.error('该邮箱已被注册，请直接登录或找回密码。');
+            setTab('login');
+            setLoading(false);
+            return;
+        }
+
         // If invite code provided, record it in profile
         if (inviteCode && data.user) {
-            // Find the inviter's profile by their invite_code
             const { data: inviter } = await supabase
                 .from('profiles')
                 .select('id')
@@ -80,15 +93,17 @@ export default function Auth() {
         setLoading(false);
     }
 
-    async function handleMagicLink(e) {
+    async function handleForgotPassword(e) {
         e.preventDefault();
         setLoading(true);
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: `${window.location.origin}/my-space` },
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/callback`,
         });
-        if (error) toast.error(error.message);
-        else setMagicSent(true);
+        // Always show success to prevent email enumeration
+        if (error) {
+            console.error('[ForgotPassword]', error);
+        }
+        setForgotSent(true);
         setLoading(false);
     }
 
@@ -112,10 +127,10 @@ export default function Auth() {
                         onClick={() => setTab('register')}
                     >注册</button>
                     <button
-                        id="tab-magic"
-                        className={`auth-tab ${tab === 'magic' ? 'active' : ''}`}
-                        onClick={() => setTab('magic')}
-                    >魔法链接</button>
+                        id="tab-forgot"
+                        className={`auth-tab ${tab === 'forgot' ? 'active' : ''}`}
+                        onClick={() => { setTab('forgot'); setForgotSent(false); }}
+                    >忘记密码</button>
                 </div>
 
                 {/* ── Login Form ── */}
@@ -132,6 +147,15 @@ export default function Auth() {
                             <input id="login-password" type="password" value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 placeholder="请输入密码" required />
+                        </div>
+                        <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
+                            <button
+                                type="button"
+                                className="auth-link-btn"
+                                onClick={() => { setTab('forgot'); setForgotSent(false); }}
+                            >
+                                忘记密码？
+                            </button>
                         </div>
                         <button id="btn-login-submit" type="submit" className="btn btn--primary auth-submit" disabled={loading}>
                             {loading ? '登录中...' : '🔑 立即登录'}
@@ -170,28 +194,28 @@ export default function Auth() {
                     </form>
                 )}
 
-                {/* ── Magic Link Form ── */}
-                {tab === 'magic' && (
-                    magicSent
+                {/* ── Forgot Password Form ── */}
+                {tab === 'forgot' && (
+                    forgotSent
                         ? (
                             <div className="alert alert--success" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                                ✉️ 魔法登录邮件已发送！<br />
-                                请打开邮件中的链接即可直接登录，无需密码。
+                                ✉️ 如果该邮箱已注册，重置链接已发送！<br />
+                                请查收邮件，点击链接即可设置新密码。
                             </div>
                         )
                         : (
-                            <form onSubmit={handleMagicLink} id="form-magic">
+                            <form onSubmit={handleForgotPassword} id="form-forgot">
                                 <div className="form-group">
-                                    <label htmlFor="magic-email">邮箱</label>
-                                    <input id="magic-email" type="email" value={email}
+                                    <label htmlFor="forgot-email">邮箱</label>
+                                    <input id="forgot-email" type="email" value={email}
                                         onChange={e => setEmail(e.target.value)}
-                                        placeholder="你的邮箱地址" required />
+                                        placeholder="你注册时使用的邮箱" required />
                                 </div>
                                 <p className="auth-disclaimer">
-                                    系统将向此邮箱发送一次性登录链接，点击即可登录，安全且无需记忆密码。
+                                    系统将向此邮箱发送密码重置链接（如果该邮箱已注册）。
                                 </p>
-                                <button id="btn-magic-submit" type="submit" className="btn btn--primary auth-submit" disabled={loading}>
-                                    {loading ? '发送中...' : '✨ 发送魔法链接'}
+                                <button id="btn-forgot-submit" type="submit" className="btn btn--primary auth-submit" disabled={loading}>
+                                    {loading ? '发送中...' : '📧 发送重置链接'}
                                 </button>
                             </form>
                         )
