@@ -103,39 +103,43 @@ export default function MySpace() {
                 </button>
             </div>
 
-            {/* ── Invite Code Card ── */}
-            <div className="myspace-section-card">
-                <h2 className="myspace-section-title">📣 专属邀请码</h2>
-                <p className="myspace-section-desc">
-                    分享以下链接，邀请朋友注册。被邀请者首次发布网页后，你将获得额外修改次数奖励。
-                </p>
-
-                {inviteCode ? (
-                    <div className="myspace-invite-box">
-                        <code id="invite-code-display" className="myspace-invite-code">{inviteCode}</code>
-                        <button
-                            id="btn-copy-invite"
-                            className="btn btn--outline btn--sm"
-                            onClick={() => {
-                                navigator.clipboard.writeText(inviteUrl);
-                                toast.success('邀请链接已复制！');
-                            }}
-                        >
-                            复制链接
-                        </button>
+            {/* ── Invite & Projects ── */}
+            <div className="grid" style={{ gap: '1rem', gridTemplateColumns: '1fr' }}>
+                {/* Invite Section */}
+                <div className="myspace-section-card" style={{ padding: '1.25rem', marginBottom: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                        <h2 className="myspace-section-title" style={{ margin: 0, fontSize: '0.95rem' }}>📣 专属邀请码</h2>
+                        {inviteCode && (
+                            <button
+                                id="btn-copy-invite"
+                                className="badge"
+                                style={{ border: 'none', cursor: 'pointer', padding: '4px 12px' }}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(inviteUrl);
+                                    toast.success('链接已复制');
+                                }}
+                            >
+                                点击复制
+                            </button>
+                        )}
                     </div>
-                ) : (
-                    <button
-                        id="btn-generate-code"
-                        className="btn btn--outline btn--sm"
-                        onClick={handleGenerateCode}
-                        disabled={generatingCode}
-                        style={{ marginTop: '0.5rem' }}
-                    >
-                        {generatingCode ? '生成中...' : '✨ 生成我的邀请码'}
-                    </button>
-                )}
-            </div>
+                    
+                    {inviteCode ? (
+                        <div className="myspace-invite-box" style={{ background: 'var(--pink-light)', border: 'none', padding: '0.5rem 1rem' }}>
+                            <code id="invite-code-display" className="myspace-invite-code" style={{ fontSize: '1rem', color: 'var(--pink)' }}>{inviteCode}</code>
+                        </div>
+                    ) : (
+                        <button
+                            id="btn-generate-code"
+                            className="btn btn--primary btn--sm"
+                            style={{ width: '100%', justifyContent: 'center' }}
+                            onClick={handleGenerateCode}
+                            disabled={generatingCode}
+                        >
+                            {generatingCode ? '生成中...' : '✨ 生成我的邀请码'}
+                        </button>
+                    )}
+                </div>
 
             {/* ── My Projects ── */}
             <div className="myspace-section-card">
@@ -191,6 +195,9 @@ export default function MySpace() {
                         ))}
                     </div>
                 )}
+            </div>
+
+                </div>
             </div>
 
             {/* ── Upgrade hint for free users ── */}

@@ -177,130 +177,119 @@ export default function Builder() {
                             访问页面 ↗
                         </a>
                         <a href={result.previewUrl} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm">
-                            预览版（如果遇到旧内容，请点此访问）
+                            预览版
                         </a>
                     </div>
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div className="builder-layout">
                 {/* Left Panel: Form */}
-                <form onSubmit={handleSubmit} className="builder-card" style={{ flex: '1 1 350px', margin: 0 }}>
-
-                    {initialLoading && (
-                        <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
-                            <div className="spinner" style={{ marginBottom: '10px' }}></div>
-                            <div>正在获取款式列表...</div>
-                        </div>
-                    )}
-
-                    {!initialLoading && (
-                        <>
-                            {/* Template selector */}
-                            <div className="form-group">
-                                <label htmlFor="template">📦 选择网页款式</label>
-                                <select
-                                    id="template"
-                                    value={selectedTemplate?.name ?? ''}
-                                    onChange={handleTemplateChange}
-                                    required
-                                >
-                                    <option value="">-- 请先选择款式 --</option>
-                                    {templates.map((t) => (
-                                        <option key={t.name} value={t.name}>{t.name}</option>
-                                    ))}
-                                </select>
+                <div className="builder-panel-form">
+                    <form onSubmit={handleSubmit} className="builder-card">
+                        {initialLoading && (
+                            <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
+                                <div className="spinner" style={{ marginBottom: '10px' }}></div>
+                                <div>正在获取款式列表...</div>
                             </div>
+                        )}
 
-                            {/* Subdomain */}
-                            <div className="form-group">
-                                <label htmlFor="subdomain">🌐 给网页定个专属网址</label>
-                                <div className="input-row">
-                                    <input
-                                        id="subdomain"
-                                        type="text"
-                                        value={subdomain}
-                                        onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                                        placeholder="例如：our-love-story"
+                        {!initialLoading && (
+                            <>
+                                {/* Template selector */}
+                                <div className="form-group">
+                                    <label htmlFor="template">📦 选择网页款式</label>
+                                    <select
+                                        id="template"
+                                        value={selectedTemplate?.name ?? ''}
+                                        onChange={handleTemplateChange}
                                         required
-                                    />
-                                    <span className="input-suffix">.{BASE_DOMAIN}</span>
+                                    >
+                                        <option value="">-- 请先选择款式 --</option>
+                                        {templates.map((t) => (
+                                            <option key={t.name} value={t.name}>{t.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                            </div>
 
-                            {/* Dynamic fields from schema */}
-                            {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
-                                <>
-                                    <hr className="builder-divider" />
-                                    <p className="builder-section-label">📝 填入你们的专属内容</p>
-                                    {selectedTemplate.fields.map((f) => {
-                                        const key = typeof f === 'string' ? f : (f.id || f.key);
-                                        const label = typeof f === 'string' ? (FIELD_LABELS[f] || f) : (f.label || f.id || f.key);
-                                        const placeholder = typeof f === 'string' 
-                                            ? (`请输入 ${FIELD_LABELS[f] || f}`) 
-                                            : (f.placeholder || `请输入 ${label}`);
-                                        const inputType = typeof f === 'string' ? 'textarea' : (f.type || 'text');
+                                {/* Subdomain */}
+                                <div className="form-group">
+                                    <label htmlFor="subdomain">🌐 给网页定个专属网址</label>
+                                    <div className="input-row">
+                                        <input
+                                            id="subdomain"
+                                            type="text"
+                                            value={subdomain}
+                                            onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                                            placeholder="例如：our-love-story"
+                                            required
+                                        />
+                                        <span className="input-suffix">.{BASE_DOMAIN}</span>
+                                    </div>
+                                </div>
 
-                                        return (
-                                            <div className="form-group" key={key}>
-                                                <label htmlFor={`f-${key}`}>{label}</label>
-                                                {inputType === 'textarea' ? (
-                                                    <textarea
-                                                        id={`f-${key}`}
-                                                        rows={key === 'paragraphs' ? 4 : 2}
-                                                        value={fieldValues[key] ?? ''}
-                                                        onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
-                                                        placeholder={placeholder}
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        id={`f-${key}`}
-                                                        type="text"
-                                                        value={fieldValues[key] ?? ''}
-                                                        onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
-                                                        placeholder={placeholder}
-                                                    />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </>
-                            )}
+                                {/* Dynamic fields from schema */}
+                                {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
+                                    <>
+                                        <hr className="builder-divider" />
+                                        <p className="builder-section-label">📝 填入你们的专属内容</p>
+                                        {selectedTemplate.fields.map((f) => {
+                                            const key = typeof f === 'string' ? f : (f.id || f.key);
+                                            const label = typeof f === 'string' ? (FIELD_LABELS[f] || f) : (f.label || f.id || f.key);
+                                            const placeholder = typeof f === 'string' 
+                                                ? (`请输入 ${FIELD_LABELS[f] || f}`) 
+                                                : (f.placeholder || `请输入 ${label}`);
+                                            const inputType = typeof f === 'string' ? 'textarea' : (f.type || 'text');
 
-                            <div className="builder-submit">
-                                <button type="submit" className="btn btn--primary" disabled={loading}>
-                                    {loading ? '全网生成中...' : '✨ 一键生成我的专属网页'}
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </form>
+                                            return (
+                                                <div className="form-group" key={key}>
+                                                    <label htmlFor={`f-${key}`}>{label}</label>
+                                                    {inputType === 'textarea' ? (
+                                                        <textarea
+                                                            id={`f-${key}`}
+                                                            rows={key === 'paragraphs' ? 4 : 2}
+                                                            value={fieldValues[key] ?? ''}
+                                                            onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
+                                                            placeholder={placeholder}
+                                                        />
+                                                    ) : (
+                                                        <input
+                                                            id={`f-${key}`}
+                                                            type="text"
+                                                            value={fieldValues[key] ?? ''}
+                                                            onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
+                                                            placeholder={placeholder}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </>
+                                )}
+
+                                <div className="builder-submit">
+                                    <button type="submit" className="btn btn--primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+                                        {loading ? '全网生成中...' : '✨ 一键生成我的专属网页'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </form>
+                </div>
 
                 {/* Right Panel: Live Preview iframe (BSR) - Mobile Form Factor */}
                 {selectedTemplate && rawHtml && (
-                    <div className="builder-preview-container" style={{ flex: '1 1 300px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', background: '#f8fafc', borderRadius: '16px', margin: 0, overflow: 'hidden' }}>
-                        <div className="mobile-mockup" style={{ 
-                            width: '320px', 
-                            height: '580px', 
-                            maxWidth: '100%',
-                            background: '#fff', 
-                            borderRadius: '36px', 
-                            boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-                            border: '10px solid #0f172a',
-                            overflow: 'hidden',
-                            position: 'relative',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            transformOrigin: 'top center'
-                        }}>
-                            <div style={{ padding: '8px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', fontSize: '13px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>{FIELD_LABELS.title ? '预览效果' : 'Preview'}</span>
-                                <span style={{ fontSize: '10px', background: '#10b981', color: 'white', padding: '2px 6px', borderRadius: '10px' }}>BSR</span>
+                    <div className="builder-panel-preview">
+                        <div className="mobile-mockup" style={{ transform: 'scale(1)', transformOrigin: 'top center' }}>
+                            <div style={{ padding: '10px 16px', background: '#fff', borderBottom: '1px solid #f1f5f9', fontSize: '13px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ color: '#1a1a2e' }}>实时预览</span>
+                                <span style={{ fontSize: '10px', background: 'var(--pink)', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>LIVE</span>
                             </div>
                             <iframe
                                 srcDoc={previewHtml}
                                 style={{ flex: 1, width: '100%', height: '100%', border: 'none', background: '#fff' }}
                                 title="Live Preview"
+                                id="preview-iframe"
                             />
                         </div>
                     </div>
