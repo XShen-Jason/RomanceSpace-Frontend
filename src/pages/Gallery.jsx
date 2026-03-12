@@ -53,7 +53,7 @@ function TemplateCard({ t }) {
             </div>
             <div className="tmpl-card__footer">
                 <a
-                    href={`${API_BASE}/api/template/preview/${t.name}`}
+                    href={`/preview/${t.name}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn--outline btn--sm"
