@@ -280,7 +280,7 @@ export default function Builder() {
                 {/* Right Panel: Live Preview iframe (BSR) - Mobile Form Factor */}
                 {selectedTemplate && rawHtml && (
                     <div className="builder-panel-preview">
-                        <div className="mobile-mockup" style={{ transform: 'scale(1)', transformOrigin: 'top center' }}>
+                        <div className="mobile-mockup" style={{ transformOrigin: 'top center' }}>
                             <div style={{ padding: '10px 16px', background: '#fff', borderBottom: '1px solid #f1f5f9', fontSize: '13px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ color: '#1a1a2e' }}>实时预览</span>
                                 <span style={{ fontSize: '10px', background: 'var(--pink)', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>LIVE</span>
