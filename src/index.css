@@ -248,16 +248,24 @@ html {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    width: 100%;
 }
 
 .input-row input {
     flex: 1;
+    min-width: 0; /* Prevent input from pushing layout */
 }
 
-.input-suffix {
-    color: var(--muted);
-    font-size: 0.88rem;
-    white-space: nowrap;
+@media (max-width: 600px) {
+    .input-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .input-suffix {
+        margin-top: 0.2rem;
+        font-size: 0.8rem;
+        text-align: right;
+    }
 }
 
 /* ── Alerts ──────────────────────────────────────────────────────────────── */
@@ -467,6 +475,7 @@ html {
 
 /* ── Builder form ────────────────────────────────────────────────────────── */
 .builder-card {
+    width: 100%;
     max-width: 640px;
     margin: 0;
     background: var(--white);
@@ -715,6 +724,25 @@ html {
     box-shadow: var(--shadow);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 500px) {
+    .myspace-profile-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1.5rem;
+    }
+    .myspace-avatar {
+        margin-bottom: 0.5rem;
+    }
+    .myspace-profile-info {
+        margin-bottom: 1rem;
+    }
+    #btn-signout {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .myspace-avatar {
