@@ -96,65 +96,18 @@ export default function Auth() {
         e.preventDefault();
         setLoading(true);
 
-        // First, check if the email actually exists (to save resources)
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                shouldCreateUser: false // prevent creating a new user if it doesn't exist
-            }
-        });
-
-        // If signInWithOtp fails with 'Signups not allowed for this instance' or similar when user doesn't exist.
-        // Or we can just use a rpc or try to sign in with a dummy password.
-        // Wait, a better way to check if email exists without sending magic link is to sign in with dummy password.
-        const { data: dummyData, error: dummyError } = await supabase.auth.signInWithPassword({
-            email,
-            password: 'dummy_password_to_check_existence_123!@#'
-        });
-
-        if (dummyError && dummyError.message === 'Invalid login credentials') {
-            // User exists, password was just wrong. Proceed with reset.
-        } else if (dummyError && (dummyError.message.includes('Email not confirmed') || dummyError.message.includes('not confirmed'))) {
-            // User exists but unconfirmed. Proceed with reset.
-        } else if (dummyError) {
-            // Most likely user does not exist. Supabase default behavior for "Invalid login credentials" applies to both wrong password and no user for security reasons (to prevent enumeration).
-            // However, we want to tell the user. 
-            // Let's use signUp check (identities array) to accurately check existence without enumeration protection.
-        }
-
-        // More reliable way to check existence: try to sign up with a dummy password.
-        // BUT that creates a user if they don't exist! We don't want that.
-        // Let's use signInWithOtp with shouldCreateUser: false
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-             email,
-             options: { shouldCreateUser: false }
-        });
-        
-        if (otpError && otpError.message.includes("Signups not allowed")) {
-            toast.error("该邮箱未注册！");
-            setLoading(false);
-            return;
-        }
-
-        // If we reach here, either the OTP was sent (which we didn't want, but it's fine as a fallback),
-        // or we can just send the reset link explicitly now.
-        // Actually, just sending the reset link directly is safer. Let's send the reset link.
-        // The user specifically asked NOT to send it if it's not registered to save resources.
-        // How to perfectly check if a user is registered? 
-        // We can query the `profiles` table by email? We don't have RLS allowed to search by email usually...
-        // Let's change the login/forgot flow to rely on backend or just use shouldCreateUser: false behavior.
-        // Actually, easiest way is to attempt password reset. If Supabase sends it, Supabase doesn't charge for emails sent to non-existent users if we have a trigger, but Supabase DOES send a "fake" email if enumeration protection is off? 
-        // If we want to check, we can just call an edge function or let's use signInWithOtp just for the error check.
-        // Wait, `resetPasswordForEmail` does not send an email if the user does not exist in Supabase (it just returns success to prevent enumeration).
-        // Since the user is using Resend/Brevo, Supabase WILL trigger the SMTP to send a "User not found" email if the email template for "magic link / recovery" is enabled, unless enumeration is ON.
-        
+        // Call the built-in reset password API directly.
+        // Note: Supabase will NOT send an email if the user does not exist,
+        // saving your Brevo quota automatically. However, it will return success 
+        // to prevent email enumeration attacks.
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/auth/callback`,
         });
 
         if (error) {
-            toast.error('发送重置链接失败：' + error.message);
+            toast.error('发送失败：' + error.message);
         } else {
+            // We just tell the user explicitly it's sent to simplify UX.
             toast.success('密码重置链接已发送！');
             setForgotSent(true);
         }
