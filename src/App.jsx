@@ -89,7 +89,7 @@ export default function App() {
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/builder" element={<Builder />} />
                     <Route path="/builder/:templateName" element={<Builder />} />
-                    <Route path="/admin/upload" element={<Admin />} />
+                    <Route path="/admin" element={<Admin />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/my-space" element={<MySpace />} />
