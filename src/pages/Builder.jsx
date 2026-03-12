@@ -36,7 +36,7 @@ export default function Builder() {
                     setSelected(null);
                 }
             })
-            .catch((e) => toast.error(`模板加载失败：${e.message}`))
+            .catch((e) => toast.error(`网页款式列表获取失败：${e.message}`))
             .finally(() => setInitialLoading(false));
     }, [templateName]);
 
@@ -70,8 +70,8 @@ export default function Builder() {
         e.preventDefault();
         setResult(null);
 
-        if (!selectedTemplate) return toast.error('请选择一个模板');
-        if (!subdomain) return toast.error('请填写子域名');
+        if (!selectedTemplate) return toast.error('请选择一个网页款式');
+        if (!subdomain) return toast.error('请给网页起一个专属网址');
 
         // Guard: require login to publish
         if (!user) {
@@ -81,7 +81,7 @@ export default function Builder() {
         }
 
         setLoading(true);
-        const toastId = toast.loading('正在全网生成中...');
+        const toastId = toast.loading('正在为您全网生成中...');
         try {
             const response = await renderProject({
                 subdomain,
@@ -137,8 +137,8 @@ export default function Builder() {
 
     return (
         <div className="page container" style={{ maxWidth: 1000 }}>
-            <h1 className="section-title">✏️ 创建专属页面</h1>
-            <p className="section-sub">填写信息后，系统将即时生成带独立域名的浪漫网页。</p>
+            <h1 className="section-title">✏️ 制作专属网页</h1>
+            <p className="section-sub">填写下方信息后，系统将即时生成带有专属独立网址的浪漫网页。</p>
 
             {result && (
                 <div className="alert alert--success" style={{ margin: '0 auto 1.5rem' }}>
@@ -148,7 +148,7 @@ export default function Builder() {
                             访问页面 ↗
                         </a>
                         <a href={result.previewUrl} target="_blank" rel="noopener noreferrer" className="btn btn--outline btn--sm">
-                            预览版（绕过CDN缓存）
+                            预览版（如果遇到旧内容，请点此访问）
                         </a>
                     </div>
                 </div>
@@ -161,7 +161,7 @@ export default function Builder() {
                     {initialLoading && (
                         <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
                             <div className="spinner" style={{ marginBottom: '10px' }}></div>
-                            <div>正在拉取云端数据...</div>
+                            <div>正在获取款式列表...</div>
                         </div>
                     )}
 
@@ -169,14 +169,14 @@ export default function Builder() {
                         <>
                             {/* Template selector */}
                             <div className="form-group">
-                                <label htmlFor="template">📦 选择模板</label>
+                                <label htmlFor="template">📦 选择网页款式</label>
                                 <select
                                     id="template"
                                     value={selectedTemplate?.name ?? ''}
                                     onChange={handleTemplateChange}
                                     required
                                 >
-                                    <option value="">-- 请选择 --</option>
+                                    <option value="">-- 请先选择款式 --</option>
                                     {templates.map((t) => (
                                         <option key={t.name} value={t.name}>{t.name}</option>
                                     ))}
@@ -185,14 +185,14 @@ export default function Builder() {
 
                             {/* Subdomain */}
                             <div className="form-group">
-                                <label htmlFor="subdomain">🌐 专属子域名</label>
+                                <label htmlFor="subdomain">🌐 给网页定个专属网址</label>
                                 <div className="input-row">
                                     <input
                                         id="subdomain"
                                         type="text"
                                         value={subdomain}
                                         onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                                        placeholder="e.g. sweeties"
+                                        placeholder="例如：our-love-story"
                                         required
                                     />
                                     <span className="input-suffix">.{BASE_DOMAIN}</span>
@@ -203,7 +203,7 @@ export default function Builder() {
                             {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
                                 <>
                                     <hr className="builder-divider" />
-                                    <p className="builder-section-label">📝 个性化内容设置</p>
+                                    <p className="builder-section-label">📝 填入你们的专属内容</p>
                                     {selectedTemplate.fields.map((key) => (
                                         <div className="form-group" key={key}>
                                             <label htmlFor={`f-${key}`}>{key}</label>
@@ -221,7 +221,7 @@ export default function Builder() {
 
                             <div className="builder-submit">
                                 <button type="submit" className="btn btn--primary" disabled={loading}>
-                                    {loading ? '全网生成中...' : '✨ 生成我的专属页面'}
+                                    {loading ? '全网生成中...' : '✨ 一键生成我的专属网页'}
                                 </button>
                             </div>
                         </>
@@ -232,8 +232,8 @@ export default function Builder() {
                 {selectedTemplate && rawHtml && (
                     <div className="builder-card" style={{ flex: '1 1 400px', margin: 0, padding: 0, height: '600px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div style={{ padding: '12px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>👀 实时预览 (0 延迟)</span>
-                            <span style={{ fontSize: '12px', background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>BSR 引擎</span>
+                            <span>👀 网页制作预览效果</span>
+                            <span style={{ fontSize: '12px', background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>极速预览引擎</span>
                         </div>
                         <iframe
                             srcDoc={previewHtml}

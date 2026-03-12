@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 
 const TIER_LABELS = {
-    free: { label: '🌟 免费用户', color: '#64748b' },
-    pro: { label: '💎 Pro 会员', color: '#7c3aed' },
-    lifetime: { label: '👑 终身合伙人', color: '#b45309' },
+    free: { label: '🌟 体验用户', color: '#64748b' },
+    pro: { label: '💎 高级会员', color: '#7c3aed' },
+    lifetime: { label: '👑 终身贵宾', color: '#b45309' },
 };
 
 export default function MySpace() {
@@ -105,7 +105,7 @@ export default function MySpace() {
 
             {/* ── Invite Code Card ── */}
             <div className="myspace-section-card">
-                <h2 className="myspace-section-title">📣 我的推广邀请码</h2>
+                <h2 className="myspace-section-title">📣 专属邀请码</h2>
                 <p className="myspace-section-desc">
                     分享以下链接，邀请朋友注册。被邀请者首次发布网页后，你将获得额外修改次数奖励。
                 </p>
@@ -140,7 +140,7 @@ export default function MySpace() {
             {/* ── My Projects ── */}
             <div className="myspace-section-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h2 className="myspace-section-title" style={{ marginBottom: 0 }}>🌐 我的专属网页</h2>
+                    <h2 className="myspace-section-title" style={{ marginBottom: 0 }}>🌐 我制作的网页</h2>
                     <Link to="/builder" className="btn btn--primary btn--sm" id="btn-create-new">
                         + 新建
                     </Link>
@@ -150,9 +150,9 @@ export default function MySpace() {
 
                 {!loadingProjects && projects.length === 0 && (
                     <div className="alert alert--info">
-                        你还没有创建过任何网页。
+                        暂未制作过网页。
                         <Link to="/gallery" style={{ marginLeft: '0.5rem', color: '#1d4ed8', fontWeight: 600 }}>
-                            去挑选模板 →
+                            去挑选款式 →
                         </Link>
                     </div>
                 )}
@@ -166,7 +166,7 @@ export default function MySpace() {
                                         🔗 {p.subdomain}.885201314.xyz
                                     </span>
                                     <span className="myspace-project-meta">
-                                        模板：{p.template_type} ·
+                                        所选款式：{p.template_type} ·
                                         更新于 {new Date(p.updated_at).toLocaleDateString('zh-CN')}
                                     </span>
                                 </div>
@@ -196,9 +196,9 @@ export default function MySpace() {
             {/* ── Upgrade hint for free users ── */}
             {profile?.tier === 'free' && (
                 <div className="myspace-upgrade-hint">
-                    <span>💡 免费用户限 1 个域名，每天最多修改 3 次。升级 Pro 享受更多特权。</span>
+                    <span>💡 体验用户限制作 1 个专属网页，每天最多修改 3 次内容。升级高级会员更享受极速专线和无限功能。</span>
                     <a href="#" className="btn btn--primary btn--sm" style={{ marginLeft: '1rem' }}>
-                        升级 Pro
+                        升级高级会员
                     </a>
                 </div>
             )}

@@ -16,15 +16,15 @@ export default function Gallery() {
 
     return (
         <div className="page container">
-            <h1 className="section-title">🎨 模板库</h1>
-            <p className="section-sub">挑选一个你喜欢的风格，开始制作你的专属浪漫网页。</p>
+            <h1 className="section-title">🎨 网页款式大厅</h1>
+            <p className="section-sub">挑选一个你喜欢的风格，开始制作你的专属浪漫网页吧！</p>
 
             {loading && <div className="spinner-wrap"><div className="spinner" /></div>}
             {error && <div className="alert alert--error">加载失败：{error}</div>}
 
             {!loading && !error && templates.length === 0 && (
                 <div className="alert alert--info">
-                    暂无可用模板，请联系管理员上传模板后再来。
+                    哎呀，目前还没有上架任何网页款式，请稍后再来看看。
                 </div>
             )}
 
@@ -41,11 +41,11 @@ function TemplateCard({ t }) {
     return (
         <div className="card tmpl-card">
             <div>
-                <p className="tmpl-card__title">📦 {t.name}</p>
+                <p className="tmpl-card__title">📦 款式代码：{t.name}</p>
                 <p className="tmpl-card__desc">
                     {t.static
-                        ? '静态模板（内容固定）'
-                        : `可定制字段：${(t.fields ?? []).join('、') || '无'}`}
+                        ? '固定款式（纯视觉体验，内容无需修改）'
+                        : `你可以修改的内容：${(t.fields ?? []).join('、') || '无'}`}
                 </p>
                 <div style={{ marginTop: '0.6rem' }}>
                     <span className="badge">{t.version}</span>
@@ -61,7 +61,7 @@ function TemplateCard({ t }) {
                     预览
                 </a>
                 <Link to={`/builder/${t.name}`} className="btn btn--primary btn--sm">
-                    使用此模板
+                    就选这个款式
                 </Link>
             </div>
         </div>

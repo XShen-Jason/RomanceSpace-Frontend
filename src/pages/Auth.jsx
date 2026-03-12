@@ -4,6 +4,16 @@ import { toast } from 'react-hot-toast';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
+const translateError = (msg) => {
+    if (!msg) return '发生未知错误，请重试';
+    if (msg.includes('Invalid login credentials')) return '邮箱或密码不正确哦，请检查一下';
+    if (msg.includes('User already registered')) return '这个邮箱已经注册过啦，请直接登录';
+    if (msg.includes('Password should be at least')) return '密码太短啦，至少需要 8 个字符哦';
+    if (msg.includes('rate limit')) return '操作太频繁啦，请稍等一会儿再试';
+    if (msg.includes('Email not confirmed')) return '邮箱还没有验证哦，请去邮箱点一下验证链接';
+    return msg; // Fallback
+};
+
 /**
  * Single page: handles Register, Login, and Forgot Password modes.
  */
@@ -32,7 +42,7 @@ export default function Auth() {
         e.preventDefault();
         setLoading(true);
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) toast.error(error.message);
+        if (error) toast.error(translateError(error.message));
         else {
             toast.success('登录成功！');
             navigate('/my-space');
@@ -53,7 +63,7 @@ export default function Auth() {
         });
 
         if (error) {
-            toast.error(error.message);
+            toast.error(translateError(error.message));
             setLoading(false);
             return;
         }
@@ -105,7 +115,7 @@ export default function Auth() {
         });
 
         if (error) {
-            toast.error('发送失败：' + error.message);
+            toast.error('发送失败：' + translateError(error.message));
         } else {
             // We just tell the user explicitly it's sent to simplify UX.
             toast.success('密码重置链接已发送！');
@@ -118,22 +128,24 @@ export default function Auth() {
         <div className="page container" style={{ maxWidth: 460 }}>
             <div className="auth-card">
                 <div className="auth-logo">💕</div>
-                <h1 className="auth-title">RomanceSpace</h1>
+                <h1 className="auth-title">浪漫空间</h1>
                 <p className="auth-sub">登录后即可永久保存你的浪漫网页</p>
 
-                {/* Tab switcher: Only Login and Register */}
-                <div className="auth-tabs">
-                    <button
-                        id="tab-login"
-                        className={`auth-tab ${tab === 'login' ? 'active' : ''}`}
-                        onClick={() => { setTab('login'); setView('form'); }}
-                    >登录</button>
-                    <button
-                        id="tab-register"
-                        className={`auth-tab ${tab === 'register' ? 'active' : ''}`}
-                        onClick={() => { setTab('register'); setView('form'); }}
-                    >注册</button>
-                </div>
+                {/* Tab switcher: Only Login and Register, hidden when in 'forgot' view */}
+                {view === 'form' && (
+                    <div className="auth-tabs">
+                        <button
+                            id="tab-login"
+                            className={`auth-tab ${tab === 'login' ? 'active' : ''}`}
+                            onClick={() => { setTab('login'); setView('form'); }}
+                        >登录</button>
+                        <button
+                            id="tab-register"
+                            className={`auth-tab ${tab === 'register' ? 'active' : ''}`}
+                            onClick={() => { setTab('register'); setView('form'); }}
+                        >注册</button>
+                    </div>
+                )}
 
                 {/* ── Login Form ── */}
                 {tab === 'login' && view === 'form' && (
@@ -158,7 +170,10 @@ export default function Auth() {
                                         background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#888'
                                     }}
                                 >
-                                    {showPassword ? '🙈' : '👁️'}
+                                    {showPassword 
+                                        ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                    }
                                 </button>
                             </div>
                         </div>
@@ -236,7 +251,10 @@ export default function Auth() {
                                         background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#888'
                                     }}
                                 >
-                                    {showPassword ? '🙈' : '👁️'}
+                                    {showPassword 
+                                        ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                    }
                                 </button>
                             </div>
                         </div>
@@ -247,7 +265,8 @@ export default function Auth() {
                                 placeholder="朋友的邀请码" maxLength={8} />
                         </div>
                         <p className="auth-disclaimer">
-                            注册即代表您同意使用条款。免费用户每账号可创建 1 个专属域名。
+                            注册即代表您同意使用条款。体验用户每个账号可免费制作 1 个专属网址。<br />
+                            若连续 180 天无人访问，免费网址将被自动回收以节约资源。
                         </p>
                         <button id="btn-register-submit" type="submit" className="btn btn--primary auth-submit" disabled={loading}>
                             {loading ? '注册中...' : '🎉 立即注册'}
@@ -256,7 +275,7 @@ export default function Auth() {
                 )}
 
                 <p className="auth-footer-link" style={{ display: view === 'form' ? 'block' : 'none' }}>
-                    <Link to="/gallery">← 先浏览模板，看完再注册</Link>
+                    <Link to="/gallery">← 先去挑选心仪款式，看完再注册</Link>
                 </p>
             </div>
         </div>

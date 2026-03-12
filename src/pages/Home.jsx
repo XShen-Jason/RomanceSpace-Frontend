@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 
 const FEATURES = [
-    { icon: '🎨', title: '精美模板', desc: '多款专业设计的浪漫模板，精心调配配色与动效，开箱即用。' },
-    { icon: '⚡', title: '即时生成', desc: '填写内容后秒速生成专属网页，同步分配独立三级域名。' },
-    { icon: '🚀', title: '极速访问', desc: '基于 Cloudflare 全球边缘网络，世界任意角落均可秒开。' },
-    { icon: '🔒', title: '安全可靠', desc: 'HTTPS 全程加密，数据存于云端，永久可访问，随时可更新。' },
+    { icon: '🎨', title: '精美网页款式', desc: '多款专业设计的浪漫主题网页，精心调配配色与动效，开箱即用。' },
+    { icon: '⚡', title: '即时生成', desc: '填写内容后秒速生成专属网页，附赠属于你们的专属独立网址。' },
+    { icon: '🚀', title: '极速访问', desc: '采用全球极速网络，情意传递零延迟，世界任意角落均可秒开。' },
+    { icon: '🔒', title: '安全可靠', desc: '全程加密保护隐私，数据永久存于云端，随时随地重温美好。' },
 ];
 
 export default function Home() {
@@ -19,8 +19,8 @@ export default function Home() {
                     选择心仪模板，填入你们之间的故事，一键生成专属链接——送给最重要的那个人。
                 </p>
                 <div className="hero__actions">
-                    <Link to="/gallery" className="btn btn--primary">浏览模板库 →</Link>
-                    <Link to="/builder" className="btn btn--outline">立即创建</Link>
+                    <Link to="/gallery" className="btn btn--primary">挑选心仪款式 →</Link>
+                    <Link to="/builder" className="btn btn--outline">立即制作网页</Link>
                 </div>
             </section>
 

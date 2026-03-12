@@ -2,6 +2,15 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 
+const translateError = (msg) => {
+    if (!msg) return '发生未知错误，请重试';
+    if (msg.includes('expired') || msg.includes('invalid')) return '验证链接可能已经失效或被使用过了，请重新获取哦';
+    if (msg.includes('rate limit')) return '操作太频繁啦，请稍等一会儿再试';
+    if (msg.includes('Password should be at least')) return '密码太短啦，至少需要 8 个字符哦';
+    if (msg.includes('same as the old one')) return '新密码不能和旧密码一样哦';
+    return msg;
+};
+
 export default function AuthCallback() {
     const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'recovery' | 'error'
     const [errorMsg, setErrorMsg] = useState('');
@@ -9,7 +18,7 @@ export default function AuthCallback() {
     // Password reset state
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
     const [resetDone, setResetDone] = useState(false);
 
@@ -50,7 +59,7 @@ export default function AuthCallback() {
             } catch (err) {
                 console.error('[AuthCallback]', err);
                 if (!isMounted) return;
-                setErrorMsg(err.message ?? '验证失败，链接可能已过期。');
+                setErrorMsg(translateError(err.message) ?? '验证失败，链接可能已过期。');
                 setStatus('error');
             }
         }
@@ -84,7 +93,7 @@ export default function AuthCallback() {
         setResetLoading(true);
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) {
-            alert('密码更新失败：' + error.message);
+            alert('密码更新失败：' + translateError(error.message));
         } else {
             setResetDone(true);
         }
@@ -175,7 +184,10 @@ export default function AuthCallback() {
                                                 background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#888'
                                             }}
                                         >
-                                            {showPassword ? '🙈' : '👁️'}
+                                            {showPassword 
+                                                ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                            }
                                         </button>
                                     </div>
                                 </div>
@@ -184,7 +196,7 @@ export default function AuthCallback() {
                                     <div className="password-input-wrapper" style={{ position: 'relative', display: 'flex' }}>
                                         <input
                                             id="confirm-password"
-                                            type={showPassword ? "text" : "password"}
+                                            type={showConfirmPassword ? "text" : "password"}
                                             value={confirmPassword}
                                             onChange={e => setConfirmPassword(e.target.value)}
                                             placeholder="再次输入新密码"
@@ -192,6 +204,19 @@ export default function AuthCallback() {
                                             required
                                             style={{ width: '100%', paddingRight: '2.5rem' }}
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            style={{
+                                                position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                                background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#888'
+                                            }}
+                                        >
+                                            {showConfirmPassword 
+                                                ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                            }
+                                        </button>
                                     </div>
                                 </div>
                                 <button

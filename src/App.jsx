@@ -25,18 +25,18 @@ function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar__inner">
-                <NavLink to="/" className="navbar__brand">💕 RomanceSpace</NavLink>
+                <NavLink to="/" className="navbar__brand">💕 浪漫空间</NavLink>
                 <div className="navbar__links">
                     <NavLink to="/gallery" className={({ isActive }) => isActive ? 'active' : ''}>
-                        模板库
+                        网页款式大厅
                     </NavLink>
                     <NavLink to="/builder" className={({ isActive }) => isActive ? 'active' : ''}>
-                        创建页面
+                        制作专属网页
                     </NavLink>
                     {user ? (
                         <>
                             <NavLink to="/my-space" className={({ isActive }) => isActive ? 'active' : ''} id="nav-myspace">
-                                {profile?.display_name ?? '我的空间'}
+                                {profile?.display_name ?? '个人主页'}
                             </NavLink>
                             <button
                                 id="nav-signout"
