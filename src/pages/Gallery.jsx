@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listTemplates } from '../api/client.js';
 
+const FIELD_LABELS = {
+    title: '网页标题',
+    sender: '发送人 (你)',
+    receiver: '接收人 (TA)',
+    paragraphs: '浪漫留言'
+};
+
 export default function Gallery() {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,10 +52,10 @@ function TemplateCard({ t }) {
                 <p className="tmpl-card__desc">
                     {t.static
                         ? '固定款式（纯视觉体验，内容无需修改）'
-                        : `你可以修改的内容：${(t.fields ?? []).join('、') || '无'}`}
+                        : `你可以修改的内容：${(t.fields ?? []).map(f => FIELD_LABELS[f] || f).join('、') || '无'}`}
                 </p>
                 <div style={{ marginTop: '0.6rem' }}>
-                    <span className="badge">{t.version}</span>
+                    {/* 版本号已隐藏 */}
                 </div>
             </div>
             <div className="tmpl-card__footer">

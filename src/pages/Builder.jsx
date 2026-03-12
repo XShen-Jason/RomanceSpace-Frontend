@@ -6,6 +6,20 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 const BASE_DOMAIN = '885201314.xyz';
 
+const FIELD_LABELS = {
+    title: '网页标题',
+    sender: '发送人 (你)',
+    receiver: '接收人 (TA)',
+    paragraphs: '浪漫留言'
+};
+
+const DEFAULT_VALUES = {
+    title: '致我最爱的人',
+    sender: '小明',
+    receiver: '小红',
+    paragraphs: '在这个特别的日子里，\n我想对你说，\n遇见你是我这辈子最幸运的事。'
+};
+
 export default function Builder() {
     const { templateName } = useParams();
     const navigate = useNavigate();
@@ -45,6 +59,17 @@ export default function Builder() {
         if (!selectedTemplate) {
             setRawHtml(null);
             return;
+        }
+
+        // Pre-fill default values for the selected template
+        if (!selectedTemplate.static && selectedTemplate.fields) {
+            const initialVals = {};
+            selectedTemplate.fields.forEach(f => {
+                initialVals[f] = DEFAULT_VALUES[f] || '';
+            });
+            setFieldValues(initialVals);
+        } else {
+            setFieldValues({});
         }
 
         const apiBase = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -206,13 +231,13 @@ export default function Builder() {
                                     <p className="builder-section-label">📝 填入你们的专属内容</p>
                                     {selectedTemplate.fields.map((key) => (
                                         <div className="form-group" key={key}>
-                                            <label htmlFor={`f-${key}`}>{key}</label>
+                                            <label htmlFor={`f-${key}`}>{FIELD_LABELS[key] || key}</label>
                                             <textarea
                                                 id={`f-${key}`}
-                                                rows={2}
+                                                rows={key === 'paragraphs' ? 4 : 2}
                                                 value={fieldValues[key] ?? ''}
                                                 onChange={(e) => setFieldValues((p) => ({ ...p, [key]: e.target.value }))}
-                                                placeholder={`请输入 ${key}`}
+                                                placeholder={`请输入 ${FIELD_LABELS[key] || key}`}
                                             />
                                         </div>
                                     ))}
@@ -228,18 +253,31 @@ export default function Builder() {
                     )}
                 </form>
 
-                {/* Right Panel: Live Preview iframe (BSR) */}
+                {/* Right Panel: Live Preview iframe (BSR) - Mobile Form Factor */}
                 {selectedTemplate && rawHtml && (
-                    <div className="builder-card" style={{ flex: '1 1 400px', margin: 0, padding: 0, height: '600px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <div style={{ padding: '12px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>👀 网页制作预览效果</span>
-                            <span style={{ fontSize: '12px', background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>极速预览引擎</span>
+                    <div className="builder-preview-wrapper" style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', background: '#f8fafc', borderRadius: '16px', margin: 0 }}>
+                        <div className="mobile-mockup" style={{ 
+                            width: '320px', 
+                            height: '600px', 
+                            background: '#fff', 
+                            borderRadius: '36px', 
+                            boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+                            border: '12px solid #0f172a',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}>
+                            <div style={{ padding: '8px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', fontSize: '13px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>{FIELD_LABELS.title ? '预览效果' : 'Preview'}</span>
+                                <span style={{ fontSize: '10px', background: '#10b981', color: 'white', padding: '2px 6px', borderRadius: '10px' }}>BSR</span>
+                            </div>
+                            <iframe
+                                srcDoc={previewHtml}
+                                style={{ flex: 1, width: '100%', height: '100%', border: 'none', background: '#fff' }}
+                                title="Live Preview"
+                            />
                         </div>
-                        <iframe
-                            srcDoc={previewHtml}
-                            style={{ flex: 1, width: '100%', border: 'none', background: '#fff' }}
-                            title="Live Preview"
-                        />
                     </div>
                 )}
             </div>
