@@ -196,9 +196,7 @@ export default function MySpace() {
                     </div>
                 )}
             </div>
-
-                </div>
-            </div>
+            </div> {/* This closes the <div className="grid"> */}
 
             {/* ── Upgrade hint for free users ── */}
             {profile?.tier === 'free' && (
