@@ -35,6 +35,7 @@ export default function Builder() {
     const [initialLoading, setInitialLoading] = useState(true);
     const [result, setResult] = useState(null); // { url }
     const [status, setStatus] = useState(null); // { dailyUsedEdits, maxDailyEdits }
+    const [showViralFooter, setShowViralFooter] = useState(true);
 
     // BSR (Browser-Side Rendering) Raw HTML
     const [rawHtml, setRawHtml] = useState(null);
@@ -42,6 +43,12 @@ export default function Builder() {
     // Load template list and check for edit mode
     useEffect(() => {
         const init = async () => {
+            // Persistence for referral code
+            const urlRef = searchParams.get('ref');
+            if (urlRef) {
+                localStorage.setItem('rs_ref', JSON.stringify({ code: urlRef, time: Date.now() }));
+            }
+
             setInitialLoading(true);
             try {
                 const d = await listTemplates();
@@ -60,6 +67,7 @@ export default function Builder() {
                             // Set field values DIRECTLY here to ensure they are available
                             // before the BSR fetch effect runs, and we will guard that effect.
                             setFieldValues(project.data || {});
+                            setShowViralFooter(project.show_viral_footer !== false);
                         }
                     }
                 } else if (templateName) {
@@ -172,6 +180,7 @@ export default function Builder() {
                 subdomain,
                 type: selectedTemplate.name,
                 data: fieldValues,
+                showViralFooter,
             });
 
             if (response.code !== 0) {
@@ -344,8 +353,28 @@ export default function Builder() {
                                                 </div>
                                             );
                                         })}
-                                    </>
-                                )}
+                                    {/* System Features (Viral Footer) */}
+                                    <hr className="builder-divider" />
+                                    <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                                        <label htmlFor="viral-toggle" style={{ marginBottom: 0, cursor: 'pointer' }}>
+                                            📢 显示下方邀请链接
+                                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>
+                                                {status?.tier === 'free' 
+                                                    ? '⚠️ 体验用户需保留此链接以支持我们' 
+                                                    : '开启后页面底部将显示“制作同款”按钮'}
+                                            </div>
+                                        </label>
+                                        <input
+                                            id="viral-toggle"
+                                            type="checkbox"
+                                            checked={showViralFooter}
+                                            disabled={status?.tier === 'free'}
+                                            onChange={(e) => setShowViralFooter(e.target.checked)}
+                                            style={{ width: 'auto', cursor: status?.tier === 'free' ? 'not-allowed' : 'pointer', transform: 'scale(1.2)' }}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                                 <div className="builder-submit">
                                     <button type="submit" className="btn btn--primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>

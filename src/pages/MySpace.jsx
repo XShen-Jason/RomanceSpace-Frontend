@@ -8,9 +8,6 @@ import { getUserStatus } from '../api/client.js';
 export default function MySpace() {
     const { user, profile, loading, signOut } = useAuth();
     const navigate = useNavigate();
-    const [projects, setProjects] = useState([]);
-    const [loadingProjects, setLoadingProjects] = useState(true);
-    const [generatingCode, setGeneratingCode] = useState(false);
     const [localInviteCode, setLocalInviteCode] = useState(null);
     const [status, setStatus] = useState({ 
         count: 0, 
@@ -21,11 +18,24 @@ export default function MySpace() {
         maxDailyEdits: 5
     });
     const [loadingStatus, setLoadingStatus] = useState(true);
+    const [inviteCount, setInviteCount] = useState(0);
 
     // Guard: redirect to auth if not logged in
     useEffect(() => {
         if (!loading && !user) navigate('/auth', { replace: true });
     }, [loading, user, navigate]);
+
+    // Fetch Invite Count from profiles
+    useEffect(() => {
+        if (!user) return;
+        supabase
+            .from('profiles')
+            .select('id', { count: 'exact', head: true })
+            .eq('invited_by', user.id)
+            .then(({ count, error }) => {
+                if (!error) setInviteCount(count || 0);
+            });
+    }, [user]);
 
     // Sync local invite code from profile
     useEffect(() => {
@@ -113,40 +123,36 @@ export default function MySpace() {
                     </span>
                     
                     {!loadingStatus && (
-                        <div className="myspace-quota-section" style={{ marginTop: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
+                        <div className="myspace-quota-section-compact" style={{ marginTop: '0.5rem', display: 'flex', gap: '1rem' }}>
                             {/* Domain Quota */}
-                            <div className="quota-group" style={{ marginBottom: '1rem' }}>
-                                <div className="quota-label-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px', fontWeight: 600, color: '#64748b' }}>
-                                    <span>网页总额度: {status.count} / {status.maxDomains}</span>
-                                    <span>{Math.round((status.count / status.maxDomains) * 100)}%</span>
+                            <div className="quota-group-mini" style={{ flex: 1 }}>
+                                <div className="quota-label-mini" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '2px', color: '#64748b' }}>
+                                    <span>网页额度: {status.count}/{status.maxDomains}</span>
                                 </div>
-                                <div className="quota-bar-bg" style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div className="quota-bar-bg-mini" style={{ height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
                                     <div 
                                         className="quota-bar-fill" 
                                         style={{ 
                                             height: '100%', 
-                                            background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)', 
-                                            width: `${Math.min(100, (status.count / status.maxDomains) * 100)}%`,
-                                            transition: 'width 0.6s ease'
+                                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', 
+                                            width: `${Math.min(100, (status.count / status.maxDomains) * 100)}%` 
                                         }} 
                                     />
                                 </div>
                             </div>
 
                             {/* Daily Edit Quota */}
-                            <div className="quota-group">
-                                <div className="quota-label-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px', fontWeight: 600, color: '#64748b' }}>
-                                    <span>今日修改模板: {status.dailyUsedEdits ?? 0} / {status.maxDailyEdits || 5}</span>
-                                    <span>{Math.round(((status.dailyUsedEdits || 0) / (status.maxDailyEdits || 5)) * 100)}%</span>
+                            <div className="quota-group-mini" style={{ flex: 1 }}>
+                                <div className="quota-label-mini" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '2px', color: '#64748b' }}>
+                                    <span>今日修改: {status.dailyUsedEdits}/{status.maxDailyEdits}</span>
                                 </div>
-                                <div className="quota-bar-bg" style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div className="quota-bar-bg-mini" style={{ height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
                                     <div 
                                         className="quota-bar-fill" 
                                         style={{ 
                                             height: '100%', 
-                                            background: 'linear-gradient(90deg, var(--pink) 0%, #f472b6 100%)', 
-                                            width: `${Math.min(100, (status.dailyUsedEdits / status.maxDailyEdits) * 100)}%`,
-                                            transition: 'width 0.6s ease'
+                                            background: 'linear-gradient(90deg, var(--pink), #f472b6)', 
+                                            width: `${Math.min(100, (status.dailyUsedEdits / status.maxDailyEdits) * 100)}%` 
                                         }} 
                                     />
                                 </div>
@@ -181,8 +187,26 @@ export default function MySpace() {
                     </div>
                     
                     {inviteCode ? (
-                        <div className="myspace-invite-box" style={{ background: 'var(--pink-light)', border: 'none', padding: '0.5rem 1rem' }}>
-                            <code id="invite-code-display" className="myspace-invite-code" style={{ fontSize: '1rem', color: 'var(--pink)' }}>{inviteCode}</code>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div className="myspace-invite-box" style={{ background: 'var(--pink-light)', border: 'none', padding: '0.5rem 1rem' }}>
+                                <code id="invite-code-display" className="myspace-invite-code" style={{ fontSize: '1.1rem', color: 'var(--pink)', letterSpacing: '2px' }}>{inviteCode}</code>
+                            </div>
+                            
+                            {/* Invite Dashboard */}
+                            <div className="invite-dashboard" style={{ display: 'flex', gap: '8px', fontSize: '12px', color: '#64748b' }}>
+                                <div style={{ flex: 1, background: '#f8fafc', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ color: 'var(--pink)', fontWeight: 'bold', fontSize: '14px' }}>{inviteCount}</div>
+                                    <div>已成功邀请</div>
+                                </div>
+                                <div style={{ flex: 1, background: '#f8fafc', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '14px' }}>+{inviteCount}</div>
+                                    <div>累计奖励额度</div>
+                                </div>
+                            </div>
+                            
+                            <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                                💡 奖励说明：每成功邀请一位新用户加入，您将获得 +1 网页创建额度奖励。
+                            </p>
                         </div>
                     ) : (
                         <button

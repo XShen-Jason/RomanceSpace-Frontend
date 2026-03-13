@@ -28,10 +28,36 @@ export default function Auth() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [inviteCode, setInviteCode] = useState(searchParams.get('ref') ?? '');
+    const [inviteCode, setInviteCode] = useState('');
     
     const [loading, setLoading] = useState(false);
     const [forgotSent, setForgotSent] = useState(false);
+
+    // Initial load: Handle invite code persistence
+    useEffect(() => {
+        const urlRef = searchParams.get('ref');
+        if (urlRef) {
+            // Save to localStorage with timestamp
+            localStorage.setItem('rs_ref', JSON.stringify({ code: urlRef, time: Date.now() }));
+            setInviteCode(urlRef.toUpperCase());
+        } else {
+            // Try to load from localStorage
+            const saved = localStorage.getItem('rs_ref');
+            if (saved) {
+                try {
+                    const { code, time } = JSON.parse(saved);
+                    // 1 day expiry (1 * 24 * 60 * 60 * 1000)
+                    if (Date.now() - time < 86400000) {
+                        setInviteCode(code.toUpperCase());
+                    } else {
+                        localStorage.removeItem('rs_ref');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('rs_ref');
+                }
+            }
+        }
+    }, [searchParams]);
 
     // If already logged in, redirect to MySpace
     useEffect(() => {
