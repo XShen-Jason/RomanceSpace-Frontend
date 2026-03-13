@@ -109,3 +109,19 @@ export async function syncTemplates(adminKey) {
         headers: { 'X-Admin-Key': adminKey },
     });
 }
+
+/** Refresh in-memory quota configuration from Cloudflare KV — admin only. */
+export async function refreshQuotas(adminKey) {
+    return apiFetch('/api/project/config/refresh-quotas', {
+        method: 'POST',
+        headers: { 'X-Admin-Key': adminKey },
+    });
+}
+
+/** Refresh in-memory blocklist from Cloudflare KV — admin only. */
+export async function refreshBlocklist(adminKey) {
+    return apiFetch('/api/project/config/refresh-blocklist', {
+        method: 'POST',
+        headers: { 'X-Admin-Key': adminKey },
+    });
+}

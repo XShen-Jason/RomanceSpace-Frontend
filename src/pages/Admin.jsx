@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { uploadTemplate, syncTemplates } from '../api/client.js';
+import { uploadTemplate, syncTemplates, refreshQuotas, refreshBlocklist } from '../api/client.js';
 
 export default function Admin() {
     const [adminKey, setAdminKey] = useState('');
@@ -67,6 +67,28 @@ export default function Admin() {
             setSuccess(`同步成功！共推送了 ${res.count} 个本地模板到 R2 和 KV。`);
         } catch (err) {
             setError('同步失败: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRefreshKV = async (type) => {
+        if (!adminKey) return setError('请输入管理员密钥');
+        setError(null);
+        setSuccess(null);
+        setLoading(true);
+        localStorage.setItem('rs_admin_key', adminKey);
+        
+        try {
+            if (type === 'quotas') {
+                const res = await refreshQuotas(adminKey);
+                setSuccess(`配额同步成功：${res.message}`);
+            } else {
+                const res = await refreshBlocklist(adminKey);
+                setSuccess(`黑名单同步成功：${res.message} (当前条数: ${res.count})`);
+            }
+        } catch (err) {
+            setError(`${type === 'quotas' ? '配额' : '黑名单'}同步失败: ` + err.message);
         } finally {
             setLoading(false);
         }
@@ -178,6 +200,33 @@ export default function Admin() {
                     <li><strong>手动模式</strong>：适合你在电脑上选好文件，上传一个全新的或临时的模板。</li>
                     <li><strong>全量同步</strong>：后端会自动扫描 <code>RomanceSpace-Templates/src</code> 目录，将里面所有的文件夹一次性推送到 R2 和 KV。适合你刚更新完代码，想让云端数据立刻整齐划一。</li>
                 </ul>
+            </div>
+
+            <div className="builder-card" style={{ marginTop: '20px', border: '1px var(--primary-light) solid' }}>
+                <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--primary-dark)' }}>⚙️ 系统配置同步 (Cloudflare KV → VPS)</h3>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '15px' }}>
+                    当您在 Cloudflare 后台手动修改了 KV 值（如配额、会员标签或黑名单）时，点击下方按钮强制 VPS 更新内存缓存。
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button 
+                        type="button" 
+                        onClick={() => handleRefreshKV('quotas')} 
+                        className="btn btn--sm" 
+                        style={{ flex: 1, background: '#fff', border: '1px solid #d1d5db', color: '#374151' }}
+                        disabled={loading}
+                    >
+                        {loading ? '同步中...' : '🔄 同步会员等级/配额'}
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={() => handleRefreshKV('blocklist')} 
+                        className="btn btn--sm" 
+                        style={{ flex: 1, background: '#fff', border: '1px solid #d1d5db', color: '#374151' }}
+                        disabled={loading}
+                    >
+                        {loading ? '同步中...' : '🚫 同步域名黑名单'}
+                    </button>
+                </div>
             </div>
         </div>
     );

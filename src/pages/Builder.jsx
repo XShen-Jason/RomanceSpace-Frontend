@@ -40,49 +40,57 @@ export default function Builder() {
     // BSR (Browser-Side Rendering) Raw HTML
     const [rawHtml, setRawHtml] = useState(null);
 
-    // Load template list and check for edit mode
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
+    // 1. Persistence for referral code (Runs once)
     useEffect(() => {
-        const init = async () => {
-            // Persistence for referral code
-            const urlRef = searchParams.get('ref');
-            if (urlRef) {
-                localStorage.setItem('rs_ref', JSON.stringify({ code: urlRef, time: Date.now() }));
-            }
+        const urlRef = searchParams.get('ref');
+        if (urlRef) {
+            localStorage.setItem('rs_ref', JSON.stringify({ code: urlRef, time: Date.now() }));
+        }
+    }, [searchParams]);
 
-            setInitialLoading(true);
-            try {
-                const d = await listTemplates();
-                const list = d.templates ?? [];
-                setTemplates(list);
+    // 2. Load template list (Runs once)
+    useEffect(() => {
+        listTemplates().then(d => {
+            setTemplates(d.templates ?? []);
+            setInitialLoading(false);
+        }).catch(e => {
+            console.error('[Templates Fetch Error]', e);
+            toast.error('获取模板列表失败');
+            setInitialLoading(false);
+        });
+    }, []);
 
-                // Handle Edit Mode
-                if (editSubdomain && user) {
-                    const cfgRes = await getConfigBySubdomain(editSubdomain, user.id);
-                    if (cfgRes.success && cfgRes.data) {
-                        const project = cfgRes.data;
-                        setSubdomain(project.subdomain);
-                        const found = list.find(t => t.name === project.template_type);
-                        if (found) {
-                            setSelected(found);
-                            // Set field values DIRECTLY here to ensure they are available
-                            // before the BSR fetch effect runs, and we will guard that effect.
-                            setFieldValues(project.data || {});
-                            setShowViralFooter(project.show_viral_footer !== false);
-                        }
+    // 3. Handle Edit Mode Data (Runs once when user/subdomain available)
+    useEffect(() => {
+        if (editSubdomain && user && !initialDataLoaded) {
+            getConfigBySubdomain(editSubdomain, user.id).then(cfgRes => {
+                if (cfgRes.success && cfgRes.data) {
+                    const project = cfgRes.data;
+                    setSubdomain(project.subdomain);
+                    // Field values and footer
+                    setFieldValues(project.data || {});
+                    setShowViralFooter(project.show_viral_footer !== false);
+                    
+                    // Template selection
+                    if (templates.length > 0) {
+                        const found = templates.find(t => t.name === project.template_type);
+                        if (found) setSelected(found);
                     }
-                } else if (templateName) {
-                    const found = list.find((t) => t.name === templateName);
-                    if (found) setSelected(found);
+                    setInitialDataLoaded(true);
                 }
-            } catch (e) {
-                console.error('[Builder Init Error]', e);
-                toast.error(`初始化失败：${e.message}`);
-            } finally {
-                setInitialLoading(false);
-            }
-        };
-        init();
-    }, [templateName, editSubdomain, user]);
+            }).catch(e => console.error('[Edit Data Error]', e));
+        }
+    }, [editSubdomain, user, templates, initialDataLoaded]);
+
+    // 4. Handle initial template choice from URL (New Page Flow)
+    useEffect(() => {
+        if (!editSubdomain && templateName && templates.length > 0 && !selectedTemplate) {
+            const found = templates.find(t => t.name === templateName);
+            if (found) setSelected(found);
+        }
+    }, [templateName, templates, editSubdomain, selectedTemplate]);
 
     // Fetch user quota for status display
     useEffect(() => {
