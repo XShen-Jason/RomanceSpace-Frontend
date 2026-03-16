@@ -78,6 +78,11 @@ export async function getUserStatus(userId) {
     return apiFetch(`/api/project/status/${userId}`);
 }
 
+/** Get all membership tiers and their configurations. */
+export async function getTiers() {
+    return apiFetch('/api/project/config/tiers');
+}
+
 // ── Admin endpoints (require admin key) ──────────────────────────────────────
 /**
  * Get existing project configuration by subdomain.
@@ -110,7 +115,24 @@ export async function syncTemplates(adminKey) {
     });
 }
 
-/** Refresh in-memory quota configuration from Cloudflare KV — admin only. */
+/** Update a specific user's tier — admin only. */
+export async function updateUserTier(targetUserId, tier, adminKey) {
+    return apiFetch('/api/project/config/update-user-tier', {
+        method: 'POST',
+        headers: { 
+            'X-Admin-Key': adminKey,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ targetUserId, tier }),
+    });
+}
+
+/** Check if VPS memory is synced with Cloudflare KV — admin only. */
+export async function getSyncStatus(adminKey) {
+    return apiFetch('/api/project/config/sync-status', {
+        headers: { 'X-Admin-Key': adminKey },
+    });
+}
 export async function refreshQuotas(adminKey) {
     return apiFetch('/api/project/config/refresh-quotas', {
         method: 'POST',

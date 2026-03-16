@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { uploadTemplate, syncTemplates, refreshQuotas, refreshBlocklist } from '../api/client.js';
+import { uploadTemplate, syncTemplates, refreshQuotas, refreshBlocklist, updateUserTier, getTiers, getSyncStatus } from '../api/client.js';
+import { supabase } from '../lib/supabase.js';
 
 export default function Admin() {
     const [adminKey, setAdminKey] = useState('');
@@ -9,7 +10,13 @@ export default function Admin() {
 
     const [loadingUpload, setLoadingUpload] = useState(false);
     const [loadingSync, setLoadingSync] = useState(false);
-    const [loadingKV, setLoadingKV] = useState(null); // 'quotas' | 'blocklist' | null
+    const [loadingQuotas, setLoadingQuotas] = useState(false);
+    const [loadingBlocklist, setLoadingBlocklist] = useState(false);
+    const [loadingTier, setLoadingTier] = useState(false);
+    const [loadingCheck, setLoadingCheck] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [tiers, setTiers] = useState({});
+    const [syncWarnings, setSyncWarnings] = useState({ quotas: false, blocklist: false });
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
@@ -22,24 +29,60 @@ export default function Admin() {
         return msg;
     };
 
-    // Initialize admin key from local storage with 24-hour expiration
+    // Initialize admin key and user session
     useEffect(() => {
         const storedValue = localStorage.getItem('rs_admin_key');
         if (storedValue) {
             try {
                 const { key, timestamp } = JSON.parse(storedValue);
-                const oneDay = 24 * 60 * 60 * 1000;
-                if (Date.now() - timestamp < oneDay) {
-                    setAdminKey(key);
-                } else {
-                    localStorage.removeItem('rs_admin_key');
-                }
-            } catch (e) {
-                // If it's old plain string format or invalid JSON, ignore
-                localStorage.removeItem('rs_admin_key');
-            }
+                const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000;
+                if (!isExpired) setAdminKey(key);
+            } catch (e) { /* invalid format */ }
         }
+
+        const getSession = async () => {
+            const { data } = await supabase.auth.getSession();
+            setUserId(data.session?.user?.id);
+        };
+        getSession();
     }, []);
+
+    const fetchTiers = async () => {
+        try {
+            setLoadingTier(true);
+            const res = await getTiers();
+            setTiers(res.tiers);
+            setSuccess('等级列表已从 VPS 缓存更新。');
+        } catch (err) {
+            setError('获取等级失败: ' + getErrorMessage(err));
+        } finally {
+            setLoadingTier(false);
+        }
+    };
+
+    const handleCheckSync = async () => {
+        if (!adminKey) return setError('请输入管理员密钥');
+        setError(null);
+        setLoadingCheck(true);
+        saveAdminKey(adminKey);
+
+        try {
+            const res = await getSyncStatus(adminKey);
+            setSyncWarnings({
+                quotas: !res.quotasSynced,
+                blocklist: !res.blocklistSynced
+            });
+            if (res.isSynced) {
+                setSuccess('✅ 经校验，VPS 内存数据与云端 KV 完全同步。');
+            } else {
+                setError('⚠️ 检测到云端 KV 有更新，请执行同步操作。');
+            }
+        } catch (err) {
+            setError('同步校验失败: ' + getErrorMessage(err));
+        } finally {
+            setLoadingCheck(false);
+        }
+    };
 
     const saveAdminKey = (key) => {
         const value = JSON.stringify({ key, timestamp: Date.now() });
@@ -145,26 +188,51 @@ export default function Admin() {
         }
     };
 
+    const handleUpdateTier = async (newTier) => {
+        if (!adminKey) return setError('请输入管理员密钥');
+        if (!userId) return setError('未登录：无法获取您的用户 ID');
+        
+        setError(null);
+        setSuccess(null);
+        setLoadingTier(true);
+        saveAdminKey(adminKey);
+
+        try {
+            await updateUserTier(userId, newTier, adminKey);
+            setSuccess(`您的等级已成功更新为：${newTier}`);
+        } catch (err) {
+            setError('等级更新失败: ' + getErrorMessage(err));
+        } finally {
+            setLoadingTier(false);
+        }
+    };
+
     const handleRefreshKV = async (type) => {
         if (!adminKey) return setError('请输入管理员密钥');
         setError(null);
         setSuccess(null);
-        setLoadingKV(type);
+        
+        if (type === 'quotas') setLoadingQuotas(true);
+        else setLoadingBlocklist(true);
+
         // Save key with timestamp
         saveAdminKey(adminKey);
         
         try {
             if (type === 'quotas') {
-                const res = await refreshQuotas(adminKey);
-                setSuccess(`配额同步成功：${res.message}`);
+                await refreshQuotas(adminKey);
+                setSuccess('会员等级与配额已成功从暂存快照同步至 VPS 缓存。');
             } else {
-                const res = await refreshBlocklist(adminKey);
-                setSuccess(`黑名单同步成功：${res.message} (当前条数: ${res.count})`);
+                await refreshBlocklist(adminKey);
+                setSuccess('域名黑名单已成功从暂存快照同步至 VPS 缓存。');
             }
+            // Clear warning after success
+            setSyncWarnings(prev => ({ ...prev, [type]: false }));
         } catch (err) {
             setError(`${type === 'quotas' ? '配额' : '黑名单'}刷新失败: ` + getErrorMessage(err));
         } finally {
-            setLoadingKV(null);
+            setLoadingQuotas(false);
+            setLoadingBlocklist(false);
         }
     };
 
@@ -277,29 +345,101 @@ export default function Admin() {
                 </ul>
             </div>
 
-            <div className="builder-card" style={{ marginTop: '20px', border: '1px var(--primary-light) solid' }}>
-                <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--primary-dark)' }}>⚙️ 边缘同步与缓存刷新</h3>
+            <div className="builder-card" style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <h3 style={{ fontSize: '1rem', margin: 0, color: 'var(--primary-dark)' }}>👤 管理员账号等级管理</h3>
+                    <button 
+                        type="button" 
+                        onClick={fetchTiers} 
+                        className="btn btn--sm" 
+                        style={{ padding: '4px 10px', background: '#f8fafc', color: '#64748b', fontSize: '0.75rem' }}
+                        disabled={loadingTier}
+                    >
+                        {loadingTier ? '读取中...' : '📥 加载/刷新等级列表'}
+                    </button>
+                </div>
                 <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '15px' }}>
-                    如果您在 Cloudflare 控制台直接修改了 KV 值（如配额、黑名单等），请点击下方按钮强制更新服务器缓存。
+                    您可以手动更改您当前的会员等级，用于功能测试或权限模拟。
                 </p>
+                {Object.keys(tiers).length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '10px', background: '#f8fafc', borderRadius: '8px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                        请先加载等级列表
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        {Object.keys(tiers).map(t => (
+                            <button 
+                                key={t}
+                                type="button" 
+                                onClick={() => handleUpdateTier(t)} 
+                                className="btn btn--sm" 
+                                style={{ flex: 1, minWidth: '80px', background: '#fff', border: '1px solid #d1d5db', color: '#374151', textTransform: 'capitalize' }}
+                                disabled={loadingTier}
+                            >
+                                {loadingTier ? '...' : (tiers[t].label || t)}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="builder-card" style={{ marginTop: '20px', border: (syncWarnings.quotas || syncWarnings.blocklist) ? '1px solid #fbbf24' : '1px var(--primary-light) solid' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <h3 style={{ fontSize: '1rem', margin: 0, color: 'var(--primary-dark)' }}>⚙️ 边缘同步与缓存刷新</h3>
+                    <button 
+                        type="button" 
+                        onClick={handleCheckSync} 
+                        className="btn btn--sm" 
+                        style={{ padding: '4px 10px', background: loadingCheck ? '#fffbeb' : '#f8fafc', color: '#d97706', fontSize: '0.75rem', border: '1px solid #fde68a' }}
+                        disabled={loadingCheck}
+                    >
+                        {loadingCheck ? '校验中...' : '🔍 检测云端更新'}
+                    </button>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '15px' }}>
+                    如果您在 Cloudflare 控制台直接修改了 KV 值，请点击下方按钮强制更新服务器缓存。
+                </p>
+
+                {(syncWarnings.quotas || syncWarnings.blocklist) && (
+                    <div style={{ background: '#fffbeb', borderLeft: '4px solid #f59e0b', padding: '10px', marginBottom: '15px', fontSize: '0.85rem', color: '#92400e' }}>
+                        <strong>⚠️ 检测到配置漂移：</strong>
+                        <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                            {syncWarnings.quotas && <li>云端等级配额 (Quotas) 已变更</li>}
+                            {syncWarnings.blocklist && <li>云端域名黑名单 (Blocklist) 已变更</li>}
+                        </ul>
+                        请点击下方对应按钮执行同步。
+                    </div>
+                )}
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
                         type="button" 
                         onClick={() => handleRefreshKV('quotas')} 
                         className="btn btn--sm" 
-                        style={{ flex: 1, background: '#fff', border: '1px solid #d1d5db', color: '#374151' }}
-                        disabled={loadingKV !== null}
+                        style={{ 
+                            flex: 1, 
+                            background: syncWarnings.quotas ? '#fffbeb' : '#f8fafc', 
+                            border: syncWarnings.quotas ? '1px solid #fde68a' : '1px solid #e2e8f0', 
+                            color: syncWarnings.quotas ? '#b45309' : '#94a3b8',
+                            fontWeight: syncWarnings.quotas ? 600 : 400
+                        }}
+                        disabled={loadingQuotas || !syncWarnings.quotas}
                     >
-                        {loadingKV === 'quotas' ? '同步中...' : '🔄 同步会员等级/配额'}
+                        {loadingQuotas ? '同步中...' : syncWarnings.quotas ? '⚡ 立即修复配额同步' : '🔄 配额已同步'}
                     </button>
                     <button 
                         type="button" 
                         onClick={() => handleRefreshKV('blocklist')} 
                         className="btn btn--sm" 
-                        style={{ flex: 1, background: '#fff', border: '1px solid #d1d5db', color: '#374151' }}
-                        disabled={loadingKV !== null}
+                        style={{ 
+                            flex: 1, 
+                            background: syncWarnings.blocklist ? '#fffbeb' : '#f8fafc', 
+                            border: syncWarnings.blocklist ? '1px solid #fde68a' : '1px solid #e2e8f0', 
+                            color: syncWarnings.blocklist ? '#b45309' : '#94a3b8',
+                            fontWeight: syncWarnings.blocklist ? 600 : 400
+                        }}
+                        disabled={loadingBlocklist || !syncWarnings.blocklist}
                     >
-                        {loadingKV === 'blocklist' ? '同步中...' : '🚫 同步域名黑名单'}
+                        {loadingBlocklist ? '同步中...' : syncWarnings.blocklist ? '⚡ 立即修复名单同步' : '🚫 名单已同步'}
                     </button>
                 </div>
             </div>
