@@ -48,7 +48,14 @@ function TemplateCard({ t }) {
     return (
         <div className="card tmpl-card">
             <div>
-                <p className="tmpl-card__title">📦 {t.title || t.name}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p className="tmpl-card__title">📦 {t.title || t.name}</p>
+                    {t.tier === 'free' && (
+                        <span style={{ background: '#f0fdf4', color: '#166534', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '50px', border: '1px solid #bdf4c9', fontWeight: 600 }}>
+                            免费
+                        </span>
+                    )}
+                </div>
                 <p className="tmpl-card__desc">
                     {t.static
                         ? '固定模板（无需修改内容）'

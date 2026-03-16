@@ -243,6 +243,15 @@ export default function Builder() {
                     ? `正在优化您的专属页面：${editSubdomain}.${BASE_DOMAIN}`
                     : '填写下方信息后，系统将即时生成带有专属独立网址的浪漫网页。'}
             </p>
+            {status?.isOverQuota && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                    <div style={{ fontSize: '0.9rem', color: '#92400e', lineHeight: '1.5' }}>
+                        <strong style={{ fontSize: '1rem' }}>进入维护模式</strong><br/>
+                        由于您的配额已到期，您可以继续维护<strong>最近编辑过的一个网页</strong>，但目前只能使用<strong>“免费”模板</strong>进行更新。其他网页已暂时锁定，续费后将立即解锁。建议尽快续费以防止域名被回收。
+                    </div>
+                </div>
+            )}
 
             {result && (
                 <div className="alert alert--success" style={{ margin: '0 auto 1.5rem' }}>

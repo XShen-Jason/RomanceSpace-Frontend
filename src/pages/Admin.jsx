@@ -15,6 +15,7 @@ export default function Admin() {
     const [loadingTier, setLoadingTier] = useState(false);
     const [loadingCheck, setLoadingCheck] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [currentTier, setCurrentTier] = useState(null);
     const [tiers, setTiers] = useState({});
     const [syncWarnings, setSyncWarnings] = useState({ quotas: false, blocklist: false });
     const [error, setError] = useState(null);
@@ -40,11 +41,40 @@ export default function Admin() {
             } catch (e) { /* invalid format */ }
         }
 
-        const getSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            setUserId(data.session?.user?.id);
+        const fetchTiers = async () => {
+            // Priority: Local Storage (Fast) -> API (Fresh)
+            const cached = localStorage.getItem('rs_tiers_config');
+            if (cached) {
+                try {
+                    setTiers(JSON.parse(cached));
+                } catch (e) { /* ignore */ }
+            } else {
+                try {
+                    const res = await getTiers();
+                    setTiers(res.tiers);
+                    localStorage.setItem('rs_tiers_config', JSON.stringify(res.tiers));
+                } catch (err) {
+                    console.error('Initial tiers fetch failed:', err);
+                }
+            }
         };
-        getSession();
+
+        const getSessionAndProfile = async () => {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                setUserId(data.session.user.id);
+                // Fetch current user profile to get tier
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('tier')
+                    .eq('id', data.session.user.id)
+                    .single();
+                if (profile) setCurrentTier(profile.tier);
+            }
+        };
+
+        getSessionAndProfile();
+        fetchTiersConfig();
     }, []);
 
     const fetchTiers = async () => {
@@ -52,7 +82,8 @@ export default function Admin() {
             setLoadingTier(true);
             const res = await getTiers();
             setTiers(res.tiers);
-            setSuccess('等级列表已从 VPS 缓存更新。');
+            localStorage.setItem('rs_tiers_config', JSON.stringify(res.tiers));
+            setSuccess('等级列表已从 VPS 实时获取并更新本地缓存。');
         } catch (err) {
             setError('获取等级失败: ' + getErrorMessage(err));
         } finally {
@@ -200,6 +231,7 @@ export default function Admin() {
         try {
             await updateUserTier(userId, newTier, adminKey);
             setSuccess(`您的等级已成功更新为：${newTier}`);
+            setCurrentTier(newTier.toLowerCase());
         } catch (err) {
             setError('等级更新失败: ' + getErrorMessage(err));
         } finally {
@@ -366,20 +398,59 @@ export default function Admin() {
                         请先加载等级列表
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        {Object.keys(tiers).map(t => (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
+                    {Object.keys(tiers).map(t => (
+                        <div key={t} style={{ 
+                            padding: '12px', 
+                            background: '#fff', 
+                            border: currentTier === t.toLowerCase() ? '2px solid var(--primary-dark)' : '1px solid #e2e8f0', 
+                            borderRadius: '10px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            position: 'relative'
+                        }}>
+                            {currentTier === t.toLowerCase() && (
+                                <span style={{ 
+                                    position: 'absolute', 
+                                    top: '-10px', 
+                                    right: '10px', 
+                                    background: 'var(--primary-dark)', 
+                                    color: '#fff', 
+                                    fontSize: '0.65rem', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px',
+                                    fontWeight: 600
+                                }}>当前</span>
+                            )}
+                            <div style={{ fontWeight: 600, color: 'var(--primary-dark)', fontSize: '0.9rem' }}>
+                                {tiers[t].label || t.toUpperCase()}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: '1.4' }}>
+                                📁 项目额度: <strong>{tiers[t].limit}</strong><br/>
+                                ✍️ 每日编辑: <strong>{tiers[t].dailyLimit}</strong><br/>
+                                🌐 最短域名: <strong>{tiers[t].minDomainLen} 字</strong>
+                            </div>
                             <button 
-                                key={t}
                                 type="button" 
                                 onClick={() => handleUpdateTier(t)} 
                                 className="btn btn--sm" 
-                                style={{ flex: 1, minWidth: '80px', background: '#fff', border: '1px solid #d1d5db', color: '#374151', textTransform: 'capitalize' }}
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '6px',
+                                    marginTop: '5px',
+                                    background: 'var(--primary-light)', 
+                                    color: 'var(--primary-dark)',
+                                    border: 'none',
+                                    fontSize: '0.75rem'
+                                }}
                                 disabled={loadingTier}
                             >
-                                {loadingTier ? '...' : (tiers[t].label || t)}
+                                {loadingTier ? '...' : '切换至该等级'}
                             </button>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
+                </div>
                 )}
             </div>
 

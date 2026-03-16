@@ -235,6 +235,16 @@ export default function MySpace() {
 
                 {loadingProjects && <div className="spinner-wrap"><div className="spinner" /></div>}
 
+                {projects.length > status.maxDomains && (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '12px', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                        <div style={{ fontSize: '0.85rem', color: '#92400e', lineHeight: '1.4' }}>
+                            <strong>账户已进入维护模式：</strong><br/>
+                            由于配额到期（当前 {projects.length}/{status.maxDomains}），部分项目已锁定。锁定项目的域名<strong>即将进入释放倒计时</strong>。请及时续费以保护您的专属域名。
+                        </div>
+                    </div>
+                )}
+
                 {!loadingProjects && projects.length === 0 && (
                     <div className="alert alert--info">
                         暂未制作过网页。
@@ -266,13 +276,19 @@ export default function MySpace() {
                                     >
                                         访问
                                     </a>
-                                    <Link
-                                        to={`/builder/${p.template_type}?edit=${p.subdomain}`}
-                                        className="btn btn--primary btn--sm"
-                                        id={`btn-edit-${p.subdomain}`}
-                                    >
-                                        编辑
-                                    </Link>
+                                    {projects.length > status.maxDomains && projects.indexOf(p) !== 0 ? (
+                                        <button className="btn btn--sm" style={{ background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed' }} disabled>
+                                            🛑 已锁定
+                                        </button>
+                                    ) : (
+                                        <Link
+                                            to={`/builder/${p.template_type}?edit=${p.subdomain}`}
+                                            className="btn btn--primary btn--sm"
+                                            id={`btn-edit-${p.subdomain}`}
+                                        >
+                                            编辑
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         ))}
