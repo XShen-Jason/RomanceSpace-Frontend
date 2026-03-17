@@ -135,7 +135,14 @@ export async function updateUserTier(targetUserId, tier, adminKey) {
     });
 }
 
-/** Check if VPS memory is synced with Cloudflare KV — admin only. */
+/** Refresh in-memory blocklist from Cloudflare KV — admin only. */
+export async function deleteTemplate(name, adminKey) {
+    return apiFetch(`/api/template/${name}`, {
+        method: 'DELETE',
+        headers: { 'X-Admin-Key': adminKey },
+    });
+}
+
 export async function getSyncStatus(adminKey) {
     return apiFetch('/api/project/config/sync-status', {
         headers: { 'X-Admin-Key': adminKey },
