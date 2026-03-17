@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { 
-    uploadTemplate, 
-    syncTemplates, 
-    pruneTemplates, 
-    refreshQuotas, 
-    refreshBlocklist, 
-    updateUserTier, 
-    getTiers, 
-    getSyncStatus, 
+import {
+    uploadTemplate,
+    syncTemplates,
+    pruneTemplates,
+    refreshQuotas,
+    refreshBlocklist,
+    updateUserTier,
+    getTiers,
+    getSyncStatus,
     listTemplates,
     deleteTemplate
 } from '../api/client.js';
@@ -143,9 +143,9 @@ export default function Admin() {
                 blocklist: !res.blocklistSynced
             });
             if (res.isSynced) {
-                setMsg(prev => ({ ...prev, main: { success: '✅ 系统内存数据与云端 KV 完全同步。' } }));
+                setMsg(prev => ({ ...prev, main: { success: '✅ 系统内部数据与云端完全同步。' } }));
             } else {
-                setMsg(prev => ({ ...prev, main: { error: '⚠️ 检测到云端 KV 有更新，请执行同步操作。' } }));
+                setMsg(prev => ({ ...prev, main: { error: `⚠️ 云端数据已过期，请前往“系统架构”选项卡执行同步。` } }));
             }
         } catch (err) {
             setMsg(prev => ({ ...prev, main: { error: '同步校验失败: ' + getErrorMessage(err) } }));
@@ -184,7 +184,7 @@ export default function Admin() {
 
         if (!adminKey) return setMsg(prev => ({ ...prev, upload: { error: '请输入管理员密钥' } }));
         if (!templateName) return setMsg(prev => ({ ...prev, upload: { error: '请输入模板英文名称' } }));
-        
+
         if (!/^[a-z0-9_]+$/.test(templateName)) {
             return setMsg(prev => ({ ...prev, upload: { error: '模板英文名不符合规范：仅限小写字母、数字和下划线' } }));
         }
@@ -199,7 +199,7 @@ export default function Admin() {
 
         const hasIndex = files.some(f => f.name === 'index.html');
         const configFile = files.find(f => f.name === 'config.json' || f.name === 'schema.json');
-        
+
         if (!hasIndex) return setMsg(prev => ({ ...prev, upload: { error: '缺少核心文件：index.html' } }));
         if (!configFile) return setMsg(prev => ({ ...prev, upload: { error: '缺少配置文件：config.json' } }));
 
@@ -211,7 +211,7 @@ export default function Admin() {
             let configJson = JSON.parse(configText);
 
             if (!configJson.name) return setMsg(prev => ({ ...prev, upload: { error: 'config.json 缺少 "name" 字段' } }));
-            
+
             if (configJson.name !== templateName) {
                 configJson.name = templateName;
                 const blob = new Blob([JSON.stringify(configJson, null, 2)], { type: 'application/json' });
@@ -231,8 +231,8 @@ export default function Admin() {
 
         const formData = new FormData();
         formData.append('templateName', templateName);
-        formData.append('syncToGithub', 'true'); 
-        
+        formData.append('syncToGithub', 'true');
+
         files.forEach(file => {
             if (file.name === configFile.name) {
                 formData.append(file.name, finalConfigFile);
@@ -246,12 +246,12 @@ export default function Admin() {
             const res = await uploadTemplate(formData, adminKey);
             let successMsg = `模板 ${res.title || res.templateName} (${res.version}) 上传成功！`;
             if (renamePerformed) successMsg += ` (已自动同步 ID)`;
-            
+
             setMsg(prev => ({ ...prev, upload: { success: successMsg, error: null } }));
             setFiles([]);
             setTemplateName('');
             setDetectedTitle('');
-            
+
             fetchCurrentTemplates();
         } catch (err) {
             setMsg(prev => ({ ...prev, upload: { error: getErrorMessage(err), success: null } }));
@@ -280,7 +280,7 @@ export default function Admin() {
 
     const handlePrune = async () => {
         if (!adminKey) return setMsg(prev => ({ ...prev, main: { error: '请输入管理员密钥' } }));
-        
+
         const confirmed = window.confirm('⚠️ 警告：存储深度清理将永久删除 R2 中所有“非活跃”版本的文件。该操作无法撤销。是否继续？');
         if (!confirmed) return;
 
@@ -300,7 +300,7 @@ export default function Admin() {
     const handleUpdateTier = async (newTier) => {
         if (!adminKey) return setMsg(prev => ({ ...prev, tier: { error: '请输入管理员密钥' } }));
         if (!userId) return setMsg(prev => ({ ...prev, tier: { error: '未登录' } }));
-        
+
         clearMsgs();
         setLoadingTier(true);
         saveAdminKey(adminKey);
@@ -319,12 +319,12 @@ export default function Admin() {
     const handleRefreshKV = async (type) => {
         if (!adminKey) return setMsg(prev => ({ ...prev, kv: { error: '请输入管理员密钥' } }));
         clearMsgs();
-        
+
         if (type === 'quotas') setLoadingQuotas(true);
         else setLoadingBlocklist(true);
 
         saveAdminKey(adminKey);
-        
+
         try {
             if (type === 'quotas') await refreshQuotas(adminKey);
             else await refreshBlocklist(adminKey);
@@ -340,7 +340,7 @@ export default function Admin() {
 
     const handleDeleteTemplate = async (name) => {
         if (!adminKey) return setMsg(prev => ({ ...prev, main: { error: '请输入管理员密钥' } }));
-        
+
         const confirmed = window.confirm(`❗ 危险操作：确定要删除模板 "${name}" 吗？\n\n1. 所有使用该模板的用户页面将无法正常显示。\n2. R2 存储中的所有相关版本文件将被彻底物理删除。\n\n此操作不可逆，请确认！`);
         if (!confirmed) return;
 
@@ -363,7 +363,7 @@ export default function Admin() {
                         setMsg(prev => ({ ...prev, main: { success: `模板 "${name}" 已强制删除。`, error: null } }));
                         fetchCurrentTemplates();
                     } catch (e) {
-                         setMsg(prev => ({ ...prev, main: { error: '强制删除失败: ' + e.message, success: null } }));
+                        setMsg(prev => ({ ...prev, main: { error: '强制删除失败: ' + e.message, success: null } }));
                     }
                 }
             } else {
@@ -394,7 +394,7 @@ export default function Admin() {
                     />
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                     <button onClick={handleSync} className="btn btn--sm" disabled={loadingSync} style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }} title="将 GitHub 仓库的最新的代码同步到 R2 存储">
+                    <button onClick={handleSync} className="btn btn--sm" disabled={loadingSync} style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }} title="将 GitHub 仓库的最新的代码同步到 R2 存储">
                         {loadingSync ? '同步中...' : '🔄 同步仓库代码'}
                     </button>
                     <button onClick={handleCheckSync} className="btn btn--sm" disabled={loadingCheck} style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }} title="核对云端 KV 与本地内存的数据一致性">
@@ -411,12 +411,12 @@ export default function Admin() {
 
             {/* Tabs Navigation */}
             <div style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: '30px' }}>
-                <button 
+                <button
                     onClick={() => setActiveTab('templates')}
-                    style={{ 
-                        padding: '12px 24px', 
-                        background: 'none', 
-                        border: 'none', 
+                    style={{
+                        padding: '12px 24px',
+                        background: 'none',
+                        border: 'none',
                         borderBottom: activeTab === 'templates' ? '2px solid var(--primary)' : 'none',
                         color: activeTab === 'templates' ? 'var(--primary-dark)' : '#64748b',
                         fontWeight: activeTab === 'templates' ? 700 : 500,
@@ -426,12 +426,12 @@ export default function Admin() {
                 >
                     🎨 模板中心
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('system')}
-                    style={{ 
-                        padding: '12px 24px', 
-                        background: 'none', 
-                        border: 'none', 
+                    style={{
+                        padding: '12px 24px',
+                        background: 'none',
+                        border: 'none',
                         borderBottom: activeTab === 'system' ? '2px solid var(--primary)' : 'none',
                         color: activeTab === 'system' ? 'var(--primary-dark)' : '#64748b',
                         fontWeight: activeTab === 'system' ? 700 : 500,
@@ -483,9 +483,9 @@ export default function Admin() {
                         <div className="builder-card">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                                 <h3 style={{ fontSize: '1.2rem', margin: 0, color: '#333' }}>📋 活跃模板库 ({existingTemplates.length})</h3>
-                                <input 
-                                    type="text" 
-                                    placeholder="搜索 ID 或名称..." 
+                                <input
+                                    type="text"
+                                    placeholder="搜索 ID 或名称..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     style={{ margin: 0, padding: '5px 10px', width: '180px', fontSize: '0.85rem' }}
@@ -505,8 +505,8 @@ export default function Admin() {
                                         </thead>
                                         <tbody>
                                             {existingTemplates
-                                                .filter(t => 
-                                                    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                                .filter(t =>
+                                                    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                                     (t.title && t.title.toLowerCase().includes(searchQuery.toLowerCase()))
                                                 )
                                                 .map(tmpl => (
@@ -514,13 +514,13 @@ export default function Admin() {
                                                         <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontWeight: 600 }}>{tmpl.name}</td>
                                                         <td style={{ padding: '12px 8px', color: '#334155' }}>{tmpl.title}</td>
                                                         <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleDeleteTemplate(tmpl.name)}
-                                                                className="btn btn--sm" 
+                                                                className="btn btn--sm"
                                                                 disabled={loadingDelete === tmpl.name}
-                                                                style={{ 
-                                                                    background: '#fef2f2', 
-                                                                    color: '#dc2626', 
+                                                                style={{
+                                                                    background: '#fef2f2',
+                                                                    color: '#dc2626',
                                                                     border: '1px solid #fee2e2',
                                                                     padding: '4px 10px'
                                                                 }}
@@ -546,8 +546,8 @@ export default function Admin() {
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {Object.keys(tiers).map(t => (
-                                    <div key={t} style={{ 
-                                        padding: '12px 20px', 
+                                    <div key={t} style={{
+                                        padding: '12px 20px',
                                         borderRadius: '12px',
                                         background: currentTier === t.toLowerCase() ? 'linear-gradient(135deg, #10b981, #059669)' : '#fff',
                                         color: currentTier === t.toLowerCase() ? '#fff' : '#334155',
@@ -556,12 +556,12 @@ export default function Admin() {
                                         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                     }}>
                                         <span style={{ fontWeight: 700 }}>{tiers[t].label}</span>
-                                        <button 
+                                        <button
                                             onClick={() => handleUpdateTier(t)}
                                             disabled={loadingTier || currentTier === t.toLowerCase()}
-                                            style={{ 
-                                                padding: '5px 15px', 
-                                                borderRadius: '20px', 
+                                            style={{
+                                                padding: '5px 15px',
+                                                borderRadius: '20px',
                                                 border: 'none',
                                                 background: currentTier === t.toLowerCase() ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
                                                 color: currentTier === t.toLowerCase() ? '#fff' : '#475569',
@@ -579,21 +579,54 @@ export default function Admin() {
 
                         {/* Engine & R2 Operations */}
                         <div className="builder-card">
-                            <h3 style={{ fontSize: '1.2rem', marginBottom: '20px' }}>⚡ 边缘计算与清理</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <button className="btn" onClick={() => handleRefreshKV('quotas')} disabled={loadingQuotas} style={{ flexDirection: 'column', padding: '20px', height: 'auto', background: syncWarnings.quotas ? '#fff7ed' : '#f8fafc', border: syncWarnings.quotas ? '1px solid #fdba74' : '1px solid #e2e8f0' }} title="将最新的会员等级数据推送到云端 KV 缓存">
-                                    <span style={{ fontSize: '1.4rem' }}>💎</span>
-                                    <span style={{ marginTop: '5px' }}>同步等级数据</span>
-                                </button>
-                                <button className="btn" onClick={() => handleRefreshKV('blocklist')} disabled={loadingBlocklist} style={{ flexDirection: 'column', padding: '20px', height: 'auto', background: syncWarnings.blocklist ? '#fff7ed' : '#f8fafc', border: syncWarnings.blocklist ? '1px solid #fdba74' : '1px solid #e2e8f0' }} title="将最新的域名黑名单推送到云端 KV 缓存">
-                                    <span style={{ fontSize: '1.4rem' }}>🚫</span>
-                                    <span style={{ marginTop: '5px' }}>同步黑名单数据</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>⚡ 核心调度与清理</h3>
+                                <button onClick={handleCheckSync} className="btn btn--sm" disabled={loadingCheck} style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', margin: 0 }}>
+                                    {loadingCheck ? '正在核对...' : '🔍 开启一致性校验'}
                                 </button>
                             </div>
-                            <button 
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleRefreshKV('quotas')}
+                                    disabled={loadingQuotas || !syncWarnings.quotas}
+                                    style={{
+                                        flexDirection: 'column', padding: '20px', height: 'auto',
+                                        background: syncWarnings.quotas ? '#fff7ed' : '#f8fafc',
+                                        border: syncWarnings.quotas ? '1px solid #fdba74' : '1px solid #e2e8f0',
+                                        opacity: (!syncWarnings.quotas && !loadingQuotas) ? 0.5 : 1
+                                    }}
+                                    title={syncWarnings.quotas ? "从云端 KV 缓存拉取最新的会员等级数据到 VPS 内存" : "内存数据已是最新，无需刷新"}
+                                >
+                                    <span style={{ fontSize: '1.4rem' }}>💎</span>
+                                    <span style={{ marginTop: '5px' }}>同步等级数据</span>
+                                    {!syncWarnings.quotas && <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>已同步</span>}
+                                </button>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleRefreshKV('blocklist')}
+                                    disabled={loadingBlocklist || !syncWarnings.blocklist}
+                                    style={{
+                                        flexDirection: 'column', padding: '20px', height: 'auto',
+                                        background: syncWarnings.blocklist ? '#fff7ed' : '#f8fafc',
+                                        border: syncWarnings.blocklist ? '1px solid #fdba74' : '1px solid #e2e8f0',
+                                        opacity: (!syncWarnings.blocklist && !loadingBlocklist) ? 0.5 : 1
+                                    }}
+                                    title={syncWarnings.blocklist ? "检测到数据过期，点击同步最新的域名黑名单" : "数据已是最新，无需同步"}
+                                >
+                                    <span style={{ fontSize: '1.4rem' }}>🚫</span>
+                                    <span style={{ marginTop: '5px' }}>同步黑名单数据</span>
+                                    {!syncWarnings.blocklist && <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>已同步</span>}
+                                </button>
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '10px', textAlign: 'center' }}>
+                                🛡️ 为了节省资源，执行同步前必须先通过“一致性校验”发现异常。
+                            </p>
+                            <button
                                 onClick={handlePrune}
                                 disabled={loadingPrune}
-                                className="btn" 
+                                className="btn"
                                 style={{ width: '100%', marginTop: '15px', background: '#dc2626', color: '#fff', border: 'none', padding: '12px' }}
                             >
                                 {loadingPrune ? '深度清理中...' : '🧹 深度清理 R2 存储残留版本'}
@@ -608,7 +641,8 @@ export default function Admin() {
                 )}
             </div>
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .admin-table tr:hover { background-color: #f8fafc; }
                 .admin-content button:disabled { opacity: 0.6; cursor: not-allowed; }
             ` }} />
