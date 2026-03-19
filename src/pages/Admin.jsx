@@ -7,7 +7,6 @@ import {
     refreshGallery,
     updateUserTier,
     getTiers,
-    getSyncStatus,
     listTemplates,
     deleteTemplate,
     updateTemplateStatus
@@ -29,15 +28,12 @@ export default function Admin() {
     const [loadingSyncAll, setLoadingSyncAll] = useState(false);
     const [loadingGalleryRefresh, setLoadingGalleryRefresh] = useState(false);
     const [loadingTier, setLoadingTier] = useState(false);
-    const [loadingCheck, setLoadingCheck] = useState(false);
     const [loadingPrune, setLoadingPrune] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(null); // stores template name being deleted
     const [loadingStatusChange, setLoadingStatusChange] = useState(null); // stores template name for status toggling
-
     const [userId, setUserId] = useState(null);
     const [currentTier, setCurrentTier] = useState(null);
     const [tiers, setTiers] = useState({});
-    const [syncWarnings, setSyncWarnings] = useState({ quotas: false, blocklist: false });
     const [msg, setMsg] = useState({
         main: { error: null, success: null },
         upload: { error: null, success: null },
@@ -130,30 +126,6 @@ export default function Admin() {
             setMsg(prev => ({ ...prev, tier: { error: '获取等级失败: ' + getErrorMessage(err), success: null } }));
         } finally {
             setLoadingTier(false);
-        }
-    };
-
-    const handleCheckSync = async () => {
-        if (!adminKey) return setMsg(prev => ({ ...prev, main: { error: '请输入管理员密钥' } }));
-        clearMsgs();
-        setLoadingCheck(true);
-        saveAdminKey(adminKey);
-
-        try {
-            const res = await getSyncStatus(adminKey);
-            setSyncWarnings({
-                quotas: !res.quotasSynced,
-                blocklist: !res.blocklistSynced
-            });
-            if (res.isSynced) {
-                setMsg(prev => ({ ...prev, main: { success: '✅ 系统内部数据与云端完全同步。' } }));
-            } else {
-                setMsg(prev => ({ ...prev, main: { error: `⚠️ 检测到配置偏移（KV 已更新但 VPS 内存未刷新），请点击下方的按钮进行“同步并对账”。` } }));
-            }
-        } catch (err) {
-            setMsg(prev => ({ ...prev, main: { error: '同步校验失败: ' + getErrorMessage(err) } }));
-        } finally {
-            setLoadingCheck(false);
         }
     };
 
@@ -337,7 +309,6 @@ export default function Admin() {
         try {
             const res = await syncAllConfig(adminKey);
             setMsg(prev => ({ ...prev, main: { success: res.message, error: null } }));
-            setSyncWarnings({ quotas: false, blocklist: false });
         } catch (err) {
             setMsg(prev => ({ ...prev, main: { error: '同步失败: ' + getErrorMessage(err), success: null } }));
         } finally {
@@ -481,9 +452,6 @@ export default function Admin() {
                     <button onClick={handleSync} className="btn btn--sm" disabled={loadingSync} style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }} title="将 GitHub 仓库的最新的代码同步到 R2 存储">
                         {loadingSync ? '同步中...' : '🔄 同步仓库代码'}
                     </button>
-                    <button onClick={handleCheckSync} className="btn btn--sm" disabled={loadingCheck} style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }} title="核对云端 KV 与本地内存的数据一致性">
-                        {loadingCheck ? '核对中...' : '🔍 配置一致性校验'}
-                    </button>
                 </div>
             </div>
 
@@ -590,13 +558,13 @@ export default function Admin() {
                                 <p style={{ textAlign: 'center', color: '#666' }}>暂无模板</p>
                             ) : (
                                 <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                                    <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                         <thead>
                                             <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                 <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>ID</th>
-                                                 <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>名称</th>
-                                                 <th style={{ padding: '8px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>状态</th>
-                                                 <th style={{ padding: '8px', textAlign: 'right', color: '#64748b', fontSize: '0.8rem' }}>操作</th>
+                                                 <th style={{ width: '30%', padding: '12px 8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>ID</th>
+                                                 <th style={{ width: '30%', padding: '12px 8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>名称</th>
+                                                 <th style={{ width: '15%', padding: '12px 8px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>状态</th>
+                                                 <th style={{ width: '25%', padding: '12px 8px', textAlign: 'right', color: '#64748b', fontSize: '0.8rem' }}>操作</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -611,9 +579,9 @@ export default function Admin() {
                                                     const statusMap = { active: { bg: '#ecfdf5', color: '#059669', border: '#10b981', label: '上架' }, offline: { bg: '#fef2f2', color: '#dc2626', border: '#fca5a5', label: '下架' }, pending: { bg: '#fffbeb', color: '#d97706', border: '#fde68a', label: '待审' }, rejected: { bg: '#f8fafc', color: '#94a3b8', border: '#e2e8f0', label: '驳回' }, archived: { bg: '#f8fafc', color: '#94a3b8', border: '#e2e8f0', label: '归档' } };
                                                     const st = statusMap[s] || statusMap.active;
                                                     return (
-                                                        <tr key={tmpl.name} style={{ borderBottom: '1px solid #f1f5f9', opacity: isActive ? 1 : 0.55 }}>
-                                                            <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontWeight: 600 }}>{tmpl.name}</td>
-                                                            <td style={{ padding: '12px 8px', color: '#334155' }}>{tmpl.title}</td>
+                                                        <tr key={tmpl.name} style={{ borderBottom: '1px solid #f1f5f9', opacity: isActive ? 1 : 0.6 }}>
+                                                            <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tmpl.name}</td>
+                                                            <td style={{ padding: '12px 8px', color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tmpl.title}</td>
                                                             <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                                                                 <span style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}`, fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>{st.label}</span>
                                                             </td>
@@ -691,9 +659,6 @@ export default function Admin() {
                         <div className="builder-card">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                                 <h3 style={{ fontSize: '1.2rem', margin: 0 }}>⚡ 核心调度与清理</h3>
-                                <button onClick={handleCheckSync} className="btn btn--sm" disabled={loadingCheck} style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', margin: 0 }}>
-                                    {loadingCheck ? '正在核对...' : '🔍 一致性校验'}
-                                </button>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
@@ -703,16 +668,16 @@ export default function Admin() {
                                     disabled={loadingSyncAll}
                                     style={{
                                         flexDirection: 'row', padding: '20px', height: 'auto', gap: '15px',
-                                        background: (syncWarnings.quotas || syncWarnings.blocklist) ? '#fff7ed' : '#ecfdf5',
-                                        border: (syncWarnings.quotas || syncWarnings.blocklist) ? '1px solid #fdba74' : '1px solid #6ee7b7',
+                                        background: '#ecfdf5',
+                                        border: '1px solid #6ee7b7',
                                     }}
                                     title="一键同步云端 KV 所有的等级配额和黑名单配置到 VPS 内存"
                                 >
                                     <span style={{ fontSize: '1.4rem' }}>🔄</span>
                                     <div style={{ textAlign: 'left' }}>
-                                        <div style={{ fontWeight: 700 }}>同步系统配置并对账</div>
+                                        <div style={{ fontWeight: 700 }}>同步系统配置</div>
                                         <div style={{ fontSize: '0.75rem', color: '#666' }}>
-                                            {(syncWarnings.quotas || syncWarnings.blocklist) ? '检测到数据偏移，建议立即同步' : '数据已对齐，可重复同步'}
+                                            手动触发 VPS 内存配置刷新
                                         </div>
                                     </div>
                                 </button>
