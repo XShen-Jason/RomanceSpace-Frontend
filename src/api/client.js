@@ -37,24 +37,30 @@ async function apiFetch(path, options = {}) {
  * List all registered templates.
  * Uses a session-level cache to avoid redundant network requests across navigation.
  */
-export async function listTemplates() {
-    if (templateCache) return templateCache;
+export async function listTemplates(adminKey = null) {
+    if (!adminKey && templateCache) return templateCache;
 
     try {
-        // Try the static file first — it's served directly by Nginx without
-        // hitting Node.js, making it extremely fast (< 5ms response time).
-        const res = await fetch('/templates.json', { cache: 'no-cache' });
-        const contentType = res.headers.get('content-type');
-        if (res.ok && contentType && contentType.includes('application/json')) {
-            const data = await res.json();
-            templateCache = data;
-            return data;
+        if (!adminKey) {
+            // Try the static file first — it's served directly by Nginx without
+            // hitting Node.js, making it extremely fast (< 5ms response time).
+            const res = await fetch('/templates.json', { cache: 'no-cache' });
+            const contentType = res.headers.get('content-type');
+            if (res.ok && contentType && contentType.includes('application/json')) {
+                const data = await res.json();
+                templateCache = data;
+                return data;
+            }
         }
     } catch { /* ignore, fall through to API */ }
     
-    // Fallback to the API if the static file doesn't exist yet
-    const data = await apiFetch('/api/template/list');
-    templateCache = data;
+    // Fallback to the API if the static file doesn't exist yet, or if adminKey is provided
+    const options = adminKey ? { headers: { 'X-Admin-Key': adminKey } } : {};
+    const data = await apiFetch('/api/template/list', options);
+    
+    if (!adminKey) {
+        templateCache = data;
+    }
     return data;
 }
 
@@ -140,6 +146,18 @@ export async function deleteTemplate(name, adminKey) {
     return apiFetch(`/api/template/${name}`, {
         method: 'DELETE',
         headers: { 'X-Admin-Key': adminKey },
+    });
+}
+
+/** Toggle template status (e.g. active <-> offline) — admin only. */
+export async function updateTemplateStatus(name, status, adminKey) {
+    return apiFetch(`/api/template/${name}/status`, {
+        method: 'PATCH',
+        headers: { 
+            'X-Admin-Key': adminKey,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status }),
     });
 }
 

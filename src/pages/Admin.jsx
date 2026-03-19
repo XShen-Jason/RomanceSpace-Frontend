@@ -9,7 +9,8 @@ import {
     getTiers,
     getSyncStatus,
     listTemplates,
-    deleteTemplate
+    deleteTemplate,
+    updateTemplateStatus
 } from '../api/client.js';
 import { supabase } from '../lib/supabase.js';
 
@@ -31,6 +32,7 @@ export default function Admin() {
     const [loadingCheck, setLoadingCheck] = useState(false);
     const [loadingPrune, setLoadingPrune] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(null); // stores template name being deleted
+    const [loadingStatusChange, setLoadingStatusChange] = useState(null); // stores template name for status toggling
 
     const [userId, setUserId] = useState(null);
     const [currentTier, setCurrentTier] = useState(null);
@@ -59,10 +61,11 @@ export default function Admin() {
         return msgStr;
     };
 
-    const fetchCurrentTemplates = async () => {
+    const fetchCurrentTemplates = async (key) => {
+        const effectiveKey = key ?? adminKey;
         try {
             setLoadingTemplates(true);
-            const res = await listTemplates();
+            const res = await listTemplates(effectiveKey || null);
             if (res.success) setExistingTemplates(res.templates);
         } catch (err) {
             console.error('Failed to fetch template list:', err);
@@ -338,6 +341,29 @@ export default function Admin() {
         }
     };
 
+    const handleToggleStatus = async (tmpl) => {
+        if (!adminKey) return setMsg(prev => ({ ...prev, main: { error: '请输入管理员密钥' } }));
+        const isActive = !tmpl.status || tmpl.status === 'active';
+        const targetStatus = isActive ? 'offline' : 'active';
+        const actionLabel = isActive ? '下架' : '重新上架';
+        const confirmed = window.confirm(
+            isActive
+                ? `⚠️ 确认下架模板 "${tmpl.title || tmpl.name}"？\n\n下架后，新用户无法选用此模板，但所有已发布的用户页面将继续正常运行，数据完整无损。`
+                : `✅ 确认将模板 "${tmpl.title || tmpl.name}" 重新上架？\n\n上架后，此模板将重新出现在前台模板大厅中。`
+        );
+        if (!confirmed) return;
+        setLoadingStatusChange(tmpl.name);
+        try {
+            await updateTemplateStatus(tmpl.name, targetStatus, adminKey);
+            setMsg(prev => ({ ...prev, main: { success: `模板 "${tmpl.name}" 已成功${actionLabel}。`, error: null } }));
+            fetchCurrentTemplates();
+        } catch (err) {
+            setMsg(prev => ({ ...prev, main: { error: `${actionLabel}失败: ` + getErrorMessage(err), success: null } }));
+        } finally {
+            setLoadingStatusChange(null);
+        }
+    };
+
     const handleDeleteTemplate = async (name) => {
         if (!adminKey) return setMsg(prev => ({ ...prev, main: { error: '请输入管理员密钥' } }));
 
@@ -481,15 +507,18 @@ export default function Admin() {
 
                         {/* Existing Templates List */}
                         <div className="builder-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                <h3 style={{ fontSize: '1.2rem', margin: 0, color: '#333' }}>📋 活跃模板库 ({existingTemplates.length})</h3>
-                                <input
-                                    type="text"
-                                    placeholder="搜索 ID 或名称..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    style={{ margin: 0, padding: '5px 10px', width: '180px', fontSize: '0.85rem' }}
-                                />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px' }}>
+                                <h3 style={{ fontSize: '1.2rem', margin: 0, color: '#333' }}>📋 模板库 ({existingTemplates.length})</h3>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                   <input
+                                       type="text"
+                                       placeholder="搜索 ID 或名称..."
+                                       value={searchQuery}
+                                       onChange={(e) => setSearchQuery(e.target.value)}
+                                       style={{ margin: 0, padding: '5px 10px', width: '160px', fontSize: '0.85rem' }}
+                                   />
+                                   <button onClick={() => fetchCurrentTemplates()} className="btn btn--sm" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}>↻</button>
+                                </div>
                             </div>
                             {existingTemplates.length === 0 ? (
                                 <p style={{ textAlign: 'center', color: '#666' }}>暂无模板</p>
@@ -498,9 +527,10 @@ export default function Admin() {
                                     <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                         <thead>
                                             <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>ID</th>
-                                                <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>名称</th>
-                                                <th style={{ padding: '8px', textAlign: 'right', color: '#64748b', fontSize: '0.8rem' }}>操作</th>
+                                                 <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>ID</th>
+                                                 <th style={{ padding: '8px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>名称</th>
+                                                 <th style={{ padding: '8px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>状态</th>
+                                                 <th style={{ padding: '8px', textAlign: 'right', color: '#64748b', fontSize: '0.8rem' }}>操作</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -509,27 +539,41 @@ export default function Admin() {
                                                     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                                     (t.title && t.title.toLowerCase().includes(searchQuery.toLowerCase()))
                                                 )
-                                                .map(tmpl => (
-                                                    <tr key={tmpl.name} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                        <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontWeight: 600 }}>{tmpl.name}</td>
-                                                        <td style={{ padding: '12px 8px', color: '#334155' }}>{tmpl.title}</td>
-                                                        <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                                                            <button
-                                                                onClick={() => handleDeleteTemplate(tmpl.name)}
-                                                                className="btn btn--sm"
-                                                                disabled={loadingDelete === tmpl.name}
-                                                                style={{
-                                                                    background: '#fef2f2',
-                                                                    color: '#dc2626',
-                                                                    border: '1px solid #fee2e2',
-                                                                    padding: '4px 10px'
-                                                                }}
-                                                            >
-                                                                {loadingDelete === tmpl.name ? '...' : '删除'}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                .map(tmpl => {
+                                                    const s = tmpl.status || 'active';
+                                                    const isActive = s === 'active';
+                                                    const statusMap = { active: { bg: '#ecfdf5', color: '#059669', border: '#10b981', label: '上架' }, offline: { bg: '#fef2f2', color: '#dc2626', border: '#fca5a5', label: '下架' }, pending: { bg: '#fffbeb', color: '#d97706', border: '#fde68a', label: '待审' }, rejected: { bg: '#f8fafc', color: '#94a3b8', border: '#e2e8f0', label: '驳回' }, archived: { bg: '#f8fafc', color: '#94a3b8', border: '#e2e8f0', label: '归档' } };
+                                                    const st = statusMap[s] || statusMap.active;
+                                                    return (
+                                                        <tr key={tmpl.name} style={{ borderBottom: '1px solid #f1f5f9', opacity: isActive ? 1 : 0.55 }}>
+                                                            <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontWeight: 600 }}>{tmpl.name}</td>
+                                                            <td style={{ padding: '12px 8px', color: '#334155' }}>{tmpl.title}</td>
+                                                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                                                                <span style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}`, fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>{st.label}</span>
+                                                            </td>
+                                                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                                                    <button
+                                                                        onClick={() => handleToggleStatus(tmpl)}
+                                                                        className="btn btn--sm"
+                                                                        disabled={loadingStatusChange === tmpl.name}
+                                                                        style={{ background: isActive ? '#fff7ed' : '#ecfdf5', color: isActive ? '#ea580c' : '#059669', border: `1px solid ${isActive ? '#fed7aa' : '#6ee7b7'}`, padding: '4px 10px' }}
+                                                                    >
+                                                                        {loadingStatusChange === tmpl.name ? '...' : (isActive ? '下架' : '上架')}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteTemplate(tmpl.name)}
+                                                                        className="btn btn--sm"
+                                                                        disabled={loadingDelete === tmpl.name}
+                                                                        style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fee2e2', padding: '4px 10px' }}
+                                                                    >
+                                                                        {loadingDelete === tmpl.name ? '...' : '删除'}
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
                                         </tbody>
                                     </table>
                                 </div>

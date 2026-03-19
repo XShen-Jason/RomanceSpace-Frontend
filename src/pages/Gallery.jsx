@@ -46,45 +46,56 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 function TemplateCard({ t }) {
     return (
-        <div className="card tmpl-card">
-            <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p className="tmpl-card__title">📦 {t.title || t.name}</p>
-                    <div style={{ display: 'flex', gap: '4px' }}>
+        <div className="card tmpl-card" style={{ display: 'flex', flexDirection: 'column', minHeight: '320px', height: '100%', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <h3 className="tmpl-card__title" style={{ margin: 0, fontSize: '1.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={t.title || t.name}>
+                        📦 {t.title || t.name}
+                    </h3>
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                         {t.tier === 'pro' ? (
-                            <span style={{ background: '#fff1f2', color: '#e11d48', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, border: '1px solid #fb7185' }}>
+                            <span style={{ background: '#fff1f2', color: '#e11d48', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, border: '1px solid #fb7185' }}>
                                 PRO
                             </span>
                         ) : (
-                            <span style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, border: '1px solid #10b981' }}>
+                            <span style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, border: '1px solid #10b981' }}>
                                 免费
                             </span>
                         )}
+                        {t.price > 0 && <span style={{ background: '#fffbeb', color: '#b45309', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, border: '1px solid #fde68a' }}>¥{t.price}</span>}
                     </div>
                 </div>
-                <p className="tmpl-card__desc">
-                    {t.static
-                        ? '固定模板（无需修改内容）'
-                        : `包含可填项：${(t.fields ?? []).map(f => {
-                            if (typeof f === 'string') return FIELD_LABELS[f] || f;
-                            return f.label || f.id || f.key || '未知字段';
-                        }).join('、') || '无'}`}
-                </p>
-                <div style={{ marginTop: '0.6rem' }}>
-                    {/* 版本号已隐藏 */}
+
+                <div style={{ color: '#64748b', fontSize: '0.9rem', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '5px' }}>
+                    {t.static ? (
+                        <p style={{ margin: 0 }}>固定模板（无需修改内容）</p>
+                    ) : (
+                        <>
+                            <div style={{ fontWeight: 600, marginBottom: '8px', color: '#475569' }}>包含以下配置项：</div>
+                            <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {(t.fields ?? []).slice(0, 6).map((f, i) => {
+                                    const label = typeof f === 'string' ? FIELD_LABELS[f] || f : f.label || f.id || f.key || '未知字段';
+                                    return <li key={i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={label}>{label}</li>;
+                                })}
+                                {(t.fields?.length || 0) > 6 && <li style={{ color: '#94a3b8', fontStyle: 'italic', listStyleType: 'none', paddingLeft: 0, marginLeft: '-20px' }}>... 以及 {(t.fields?.length || 0) - 6} 个其他项</li>}
+                            </ul>
+                        </>
+                    )}
                 </div>
             </div>
-            <div className="tmpl-card__footer">
+            
+            <div className="tmpl-card__footer" style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '8px' }}>
                 <a
                     href={`/preview/${t.name}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn--outline btn--sm"
+                    style={{ flex: 1, textAlign: 'center' }}
                 >
                     预览
                 </a>
-                <Link to={`/builder/${t.name}`} className="btn btn--primary btn--sm">
-                    就选这个模板
+                <Link to={`/builder/${t.name}`} className="btn btn--primary btn--sm" style={{ flex: 2, textAlign: 'center' }}>
+                    使用模板
                 </Link>
             </div>
         </div>
