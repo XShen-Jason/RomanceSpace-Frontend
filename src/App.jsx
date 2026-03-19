@@ -12,6 +12,36 @@ const Auth = lazy(() => import('./pages/Auth.jsx'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback.jsx'));
 const MySpace = lazy(() => import('./pages/MySpace.jsx'));
 
+/**
+ * ProtectedRoute: Logic-based guard for authenticated and role-based routes.
+ */
+function ProtectedRoute({ children, adminOnly = false }) {
+    const { user, profile, loading } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loading) {
+            if (!user) {
+                toast.error('请先登录后再访问该页面 🔑');
+                navigate('/auth', { replace: true });
+            } else if (adminOnly && profile && profile.role !== 'admin') {
+                toast.error('权限不足：该页面仅限管理员访问 🛡️');
+                navigate('/', { replace: true });
+            }
+        }
+    }, [user, profile, loading, navigate, adminOnly]);
+
+    if (loading || !user || (adminOnly && (!profile || profile.role !== 'admin'))) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div className="spinner" />
+            </div>
+        );
+    }
+
+    return children;
+}
+
 function Navbar() {
     const { user, profile, signOut } = useAuth();
     const navigate = useNavigate();
@@ -35,9 +65,14 @@ function Navbar() {
                     </NavLink>
                     {user ? (
                         <>
-                            <NavLink to="/my-space" className={({ isActive }) => isActive ? 'active' : ''} id="nav-myspace">
+                            <NavLink to="/myspace" className={({ isActive }) => isActive ? 'active' : ''} id="nav-myspace">
                                 {profile?.display_name?.slice(0, 4) ?? '我的'}
                             </NavLink>
+                            {profile?.role === 'admin' && (
+                                <NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''} id="nav-admin">
+                                    管理
+                                </NavLink>
+                            )}
                             <button
                                 id="nav-signout"
                                 onClick={handleSignOut}
@@ -89,10 +124,11 @@ export default function App() {
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/builder" element={<Builder />} />
                     <Route path="/builder/:templateName" element={<Builder />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin" element={<ProtectedRoute adminOnly={true}><Admin /></ProtectedRoute>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
-                    <Route path="/my-space" element={<MySpace />} />
+                    <Route path="/myspace" element={<ProtectedRoute><MySpace /></ProtectedRoute>} />
+                    <Route path="/my-space" element={<ProtectedRoute><MySpace /></ProtectedRoute>} />
                 </Routes>
             </Suspense>
         </AuthProvider>

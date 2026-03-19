@@ -67,7 +67,7 @@ export default function Auth() {
 
     // If already logged in, redirect to MySpace
     useEffect(() => {
-        if (user) navigate('/my-space', { replace: true });
+        if (user) navigate('/myspace', { replace: true });
     }, [user, navigate]);
 
     async function handleLogin(e) {
@@ -77,7 +77,7 @@ export default function Auth() {
         if (error) toast.error(translateError(error.message));
         else {
             toast.success('登录成功！');
-            navigate('/my-space');
+            navigate('/myspace');
         }
         setLoading(false);
     }

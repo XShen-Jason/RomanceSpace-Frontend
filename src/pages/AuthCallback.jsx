@@ -154,7 +154,7 @@ export default function AuthCallback() {
                                     ✅ 密码已成功更新！
                                 </div>
                                 <Link
-                                    to="/my-space"
+                                    to="/myspace"
                                     className="btn btn--primary auth-submit"
                                     style={{ marginTop: '1.5rem', display: 'block', textDecoration: 'none', textAlign: 'center' }}
                                 >
