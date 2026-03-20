@@ -52,6 +52,7 @@ export default function Admin() {
         renewal_price_yuan: '',// Renewal price (¥)
         discount_label: '',
         is_active: true,
+        allow_renewal: true,   // NEW: if false, user can't renew at this price
         sort_order: '0'
     });
 
@@ -500,6 +501,7 @@ export default function Admin() {
         renewal_price_yuan: '',
         discount_label: '',
         is_active: true,
+        allow_renewal: true,
         sort_order: '0'
     };
 
@@ -507,7 +509,7 @@ export default function Admin() {
         e.preventDefault();
         if (!adminKey) return toast.error('请输入管理员密钥');
 
-        const { pricing_type, tier, duration_months, display_name, base_price_yuan, intro_price_yuan, renewal_price_yuan, discount_label, is_active, sort_order } = pricingForm;
+        const { pricing_type, tier, duration_months, display_name, base_price_yuan, intro_price_yuan, renewal_price_yuan, discount_label, is_active, allow_renewal, sort_order } = pricingForm;
 
         // --- Front-end validation ---
         const basePriceCents = yuanToCents(base_price_yuan);
@@ -545,6 +547,7 @@ export default function Admin() {
                 renewal_price: renewalPriceCents,
                 discount_label: discount_label.trim() || null,
                 is_active,
+                allow_renewal,
                 sort_order: parseInt(sort_order) || 0
             };
             if (editingPricing) payload.id = editingPricing.id;
@@ -590,6 +593,7 @@ export default function Admin() {
             renewal_price_yuan: centsToYuan(c.renewal_price),
             discount_label: c.discount_label || '',
             is_active: c.is_active !== false,
+            allow_renewal: c.allow_renewal !== false,
             sort_order: String(c.sort_order ?? 0)
         });
     };
@@ -945,9 +949,10 @@ export default function Admin() {
                                 </div>
 
                                 {/* ─ Section 4: Labels & Status ─ */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
-                                    <div className="form-group" style={{ margin: 0 }}>
-                                        <label style={{ fontSize: '0.8rem' }}>促销标签（如 限时5折）</label>
+                                <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '10px', letterSpacing: '0.05em' }}>促销与上架状态</div>
+                                    <div className="form-group" style={{ marginBottom: '12px' }}>
+                                        <label style={{ fontSize: '0.8rem' }}>促销展示标签（如：限时5折、最热门）</label>
                                         <input
                                             type="text"
                                             value={pricingForm.discount_label}
@@ -955,15 +960,25 @@ export default function Admin() {
                                             placeholder="限时特惠"
                                         />
                                     </div>
-                                    <div style={{ paddingTop: '22px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <input
-                                            type="checkbox"
-                                            id="is_active_chk"
-                                            style={{ accentColor: 'var(--pink)', width: '16px', height: '16px' }}
-                                            checked={pricingForm.is_active}
-                                            onChange={e => setPricingForm({...pricingForm, is_active: e.target.checked})}
-                                        />
-                                        <label htmlFor="is_active_chk" style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600 }}>立即上架</label>
+                                    <div style={{ display: 'flex', gap: '20px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setPricingForm({...pricingForm, is_active: !pricingForm.is_active})}>
+                                            <input
+                                                type="checkbox"
+                                                checked={pricingForm.is_active}
+                                                readOnly
+                                                style={{ accentColor: 'var(--pink)', width: '16px', height: '16px' }}
+                                            />
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>立即上架</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setPricingForm({...pricingForm, allow_renewal: !pricingForm.allow_renewal})}>
+                                            <input
+                                                type="checkbox"
+                                                checked={pricingForm.allow_renewal}
+                                                readOnly
+                                                style={{ accentColor: 'var(--pink)', width: '16px', height: '16px' }}
+                                            />
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>允许续费</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1047,8 +1062,13 @@ export default function Admin() {
                                                             background: c.is_active ? '#ecfdf5' : '#fef2f2',
                                                             color: c.is_active ? '#059669' : '#dc2626'
                                                         }}>
-                                                            {c.is_active ? '上架' : '下架'}
+                                                            {c.is_active ? '上架中' : '已下架'}
                                                         </span>
+                                                        {c.allow_renewal === false && (
+                                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fee2e2' }}>
+                                                                🚫 不可续费
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '4px' }}>
                                                         <strong style={{ color: '#f43f5e' }}>{priceDesc}</strong>
