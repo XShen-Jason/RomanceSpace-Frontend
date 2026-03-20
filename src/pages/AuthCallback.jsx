@@ -54,7 +54,8 @@ export default function AuthCallback() {
                 if (isRecovery) {
                     setStatus('recovery');
                 } else {
-                    setStatus('success');
+                    // Give priority to PASSWORD_RECOVERY event which might have just fired
+                    setStatus(prev => prev === 'recovery' ? 'recovery' : 'success');
                 }
             } catch (err) {
                 console.error('[AuthCallback]', err);
@@ -69,6 +70,8 @@ export default function AuthCallback() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
             if (event === 'PASSWORD_RECOVERY') {
                 setStatus('recovery');
+            } else if (event === 'SIGNED_IN') {
+                setStatus(prev => prev === 'recovery' ? 'recovery' : 'success');
             }
         });
 
