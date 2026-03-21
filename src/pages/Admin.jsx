@@ -838,7 +838,6 @@ export default function Admin() {
                                             <label style={{ fontSize: '0.8rem' }}>会员等级</label>
                                             <select value={pricingForm.tier} onChange={e => setPricingForm({...pricingForm, tier: e.target.value})}>
                                                 {Object.keys(tiers).length > 0 ? Object.keys(tiers)
-                                                    .filter(t => t !== 'admin') // System tiers probably shouldn't be purchasable
                                                     .sort((a, b) => (tiers[a].limit || 0) - (tiers[b].limit || 0))
                                                     .map(t => (
                                                         <option key={t} value={t}>
@@ -846,10 +845,9 @@ export default function Admin() {
                                                         </option>
                                                     )) : (
                                                     <>
-                                                        <option value="free">小白版</option>
-                                                        <option value="pro">专业版</option>
-                                                        <option value="partner">合伙人</option>
-                                                        <option value="lifetime">终身版</option>
+                                                        <option value="pro">Pro 专业版</option>
+                                                        <option value="partner">Partner 合伙人</option>
+                                                        <option value="lifetime">Lifetime 终身</option>
                                                     </>
                                                 )}
                                             </select>
