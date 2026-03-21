@@ -10,7 +10,7 @@ export default function Upgrade() {
     
     const [configs, setConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [paying, setPaying] = useState(false);
+    const [payingId, setPayingId] = useState(null);
     
     // Polling State
     const orderNoParam = searchParams.get('order_no');
@@ -76,7 +76,7 @@ export default function Upgrade() {
             toast.error('请先登录');
             return navigate('/auth');
         }
-        setPaying(true);
+        setPayingId(config.id);
         try {
             const url = `${API_BASE}/api/payment/create`;
             const res = await fetch(url, {
@@ -84,6 +84,7 @@ export default function Upgrade() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: user.id,
+                    configId: config.id, // Primary Identifier
                     tier: config.tier,
                     duration_months: config.duration_months,
                     payType
@@ -97,11 +98,11 @@ export default function Upgrade() {
                 toast.success('由于合规要求，请在新打开的页面完成支付。');
             } else {
                 toast.error(data.error || '创建订单失败');
-                setPaying(false);
             }
         } catch (e) {
             toast.error('网络请求失败');
-            setPaying(false);
+        } finally {
+            setPayingId(null);
         }
     };
 
@@ -368,16 +369,17 @@ export default function Upgrade() {
                             </div>
 
                             <button 
-                                disabled={paying}
+                                disabled={!!payingId}
                                 onClick={() => handleCheckout(c, 'wechat')}
                                 style={{ 
                                     width: '100%', padding: '20px', borderRadius: '20px', 
                                     fontSize: '1.2rem', fontWeight: 800, transition: 'all 0.3s ease',
                                     background: themeColor, color: '#fff', border: 'none',
-                                    cursor: 'pointer', boxShadow: `0 10px 25px -5px ${themeColor}66`
+                                    cursor: 'pointer', boxShadow: `0 10px 25px -5px ${themeColor}66`,
+                                    opacity: (payingId && payingId !== c.id) ? 0.7 : 1
                                 }}
                             >
-                                {paying ? '正在唤起支付...' : (c.is_renewal ? '立即续费特权' : '立即开启特权')}
+                                {payingId === c.id ? '正在唤起支付...' : (c.is_renewal ? '立即续费特权' : '立即开启特权')}
                             </button>
                             <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '15px' }}>
                                 安全加密支付 · 权益秒到账
