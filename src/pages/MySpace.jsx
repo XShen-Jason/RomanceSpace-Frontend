@@ -360,6 +360,16 @@ export default function MySpace() {
                                     >
                                         访问
                                     </a>
+                                    <button 
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(pageUrl);
+                                            toast.success('已复制网址到剪贴板！');
+                                        }}
+                                        className="btn btn--outline btn--sm"
+                                        style={{ borderColor: '#dcfce7', color: '#16a34a', background: '#f0fdf4' }}
+                                    >
+                                        分享🔗
+                                    </button>
                                     {projects.length > status.maxDomains && projects.indexOf(p) !== 0 ? (
                                         <button className="btn btn--sm" style={{ background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed' }} disabled>
                                             🛑 已锁定

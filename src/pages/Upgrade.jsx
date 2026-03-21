@@ -340,7 +340,7 @@ export default function Upgrade() {
                                     等级核心权益:
                                 </div>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '1rem', color: '#475569' }}>
-                                    {(c.features || [
+                                    {((Array.isArray(c.features) && c.features.length > 0) ? c.features : [
                                         { text: '100% 模板库自由切换', active: true },
                                         { text: `${isPro ? '3' : isPartner ? '10' : '99'} 个域名配额`, active: true },
                                         { text: '专属 7x24h 情感导师技术支持', active: isPartner || isLifetime },

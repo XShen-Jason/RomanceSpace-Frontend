@@ -294,6 +294,17 @@ export default function Builder() {
                     </div>
                 </div>
             )}
+            {editSubdomain && (
+                <div style={{ padding: '20px', background: '#f8fafc', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9', fontSize: '0.9rem', color: '#64748b' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#0ea5e9' }}>ℹ️</span>
+                        <span>当前为更新页面内容，不消耗建站网址数量配额。</span>
+                    </div>
+                    <div style={{ marginTop: '8px', paddingLeft: '24px' }}>
+                        今日剩余可修改次数：<b style={{ color: '#0f172a' }}>{status.maxDailyEdits - status.dailyUsedEdits} / {status.maxDailyEdits}</b>
+                    </div>
+                </div>
+            )}
 
             {result && (
                 <div className="alert alert--success" style={{ margin: '0 auto 1.5rem' }}>
@@ -359,6 +370,11 @@ export default function Builder() {
                                         />
                                         <span className="input-suffix">.{BASE_DOMAIN}</span>
                                     </div>
+                                    {!editSubdomain && (
+                                        <div style={{ fontSize: '0.82rem', color: '#f43f5e', marginTop: '6px', fontWeight: 500 }}>
+                                            ⚠️ 专属网址一经创建永久绑定，无法修改或删除，请慎重填写！
+                                        </div>
+                                    )}
                                     {!editSubdomain && domainStatus !== 'idle' && (
                                         <div style={{
                                             fontSize: '0.8rem',
@@ -379,7 +395,7 @@ export default function Builder() {
                                     {editSubdomain && (
                                         <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
                                             💡 更新内容不消耗账号额度。
-                                            {status && <span> 今日剩余可修改次数：{status.maxDailyEdits - status.dailyUsedEdits} / {status.maxDailyEdits}</span>}
+                                            {/* This line is now redundant as the info box above covers it. */}
                                         </p>
                                     )}
                                 </div>
