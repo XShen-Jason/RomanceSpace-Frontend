@@ -323,8 +323,9 @@ export default function Upgrade() {
                                     }
                                 </div>
                                 <div style={{ 
-                                    display: 'inline-block', padding: '4px 12px', borderRadius: '8px',
-                                    background: themeBg, color: themeColor, fontSize: '0.85rem', fontWeight: 700, marginTop: '10px'
+                                    display: 'inline-block', padding: '6px 14px', borderRadius: '8px',
+                                    background: themeColor, color: '#fff', fontSize: '0.85rem', fontWeight: 700, marginTop: '10px',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                                 }}>
                                     {c.is_renewal 
                                         ? '您当前的续费特惠价' 
@@ -354,11 +355,11 @@ export default function Upgrade() {
                                         }}>
                                             <span style={{ 
                                                 width: '20px', height: '20px', borderRadius: '50%',
-                                                background: item.active ? themeColor : '#cbd5e1',
+                                                background: item.active !== false ? themeColor : '#cbd5e1',
                                                 color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 fontSize: '10px', marginTop: '4px', flexShrink: 0
-                                            }}>{item.p ? '✓' : '✕'}</span>
-                                            <span style={{ textDecoration: item.p ? 'none' : 'line-through' }}>{item.l}</span>
+                                            }}>{item.active !== false ? '✓' : '✕'}</span>
+                                            <span style={{ textDecoration: item.active !== false ? 'none' : 'line-through' }}>{item.text}</span>
                                         </li>
                                     ))}
                                 </ul>

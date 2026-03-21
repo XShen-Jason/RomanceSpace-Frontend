@@ -835,9 +835,17 @@ export default function Admin() {
                                         <div className="form-group" style={{ margin: 0, minWidth: 0 }}>
                                             <label style={{ fontSize: '0.8rem' }}>会员等级</label>
                                             <select value={pricingForm.tier} onChange={e => setPricingForm({...pricingForm, tier: e.target.value})}>
-                                                <option value="pro">Pro 专业版</option>
-                                                <option value="partner">Partner 合伙人</option>
-                                                <option value="lifetime">Lifetime 终身</option>
+                                                {Object.keys(tiers).length > 0 ? Object.keys(tiers).map(t => (
+                                                    <option key={t} value={t}>
+                                                        {tiers[t].label || t.toUpperCase()}
+                                                    </option>
+                                                )) : (
+                                                    <>
+                                                        <option value="pro">Pro 专业版</option>
+                                                        <option value="partner">Partner 合伙人</option>
+                                                        <option value="lifetime">Lifetime 终身</option>
+                                                    </>
+                                                )}
                                             </select>
                                         </div>
                                         <div className="form-group" style={{ margin: 0, minWidth: 0 }}>
