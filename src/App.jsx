@@ -13,6 +13,7 @@ const Orders = lazy(() => import('./pages/Orders.jsx'));
 const Auth = lazy(() => import('./pages/Auth.jsx'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback.jsx'));
 const MySpace = lazy(() => import('./pages/MySpace.jsx'));
+const Preview = lazy(() => import('./pages/Preview.jsx'));
 
 /**
  * ProtectedRoute: Logic-based guard for authenticated and role-based routes.
@@ -126,6 +127,7 @@ export default function App() {
                     <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/myspace" element={<ProtectedRoute><MySpace /></ProtectedRoute>} />
                     <Route path="/my-space" element={<ProtectedRoute><MySpace /></ProtectedRoute>} />
+                    <Route path="/preview/:templateName" element={<Preview />} />
                 </Routes>
             </Suspense>
         </AuthProvider>

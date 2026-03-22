@@ -272,8 +272,12 @@ export default function Builder() {
 
         previewHtml = previewHtml.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
             const k = key.trim();
-            if (fieldValues[k] !== undefined && fieldValues[k] !== '') return fieldValues[k];
-            return '';
+            const val = fieldValues[k];
+            // Only replace if user explicitly provided a non-empty value.
+            // If the value is empty/unset, keep the original {{ placeholder }} so
+            // the template's own isUninjected() / default-value JS can still run.
+            if (val !== undefined && val !== '') return val;
+            return match;
         });
     }
 
