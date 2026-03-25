@@ -617,7 +617,7 @@ export default function Builder() {
                     </section>
 
                     {/* Right Panel: Live Preview iframe (BSR) */}
-                    <section className="w-full lg:w-[380px] flex flex-col h-[600px] lg:h-[720px] max-h-[85vh] shrink-0 mx-auto lg:my-auto">
+                    <section className="w-full lg:w-[380px] flex flex-col h-auto aspect-[9/19.5] max-h-[82vh] shrink-0 mx-auto lg:my-auto">
                         <div className="flex-1 glass-panel rounded-xl overflow-hidden border border-outline-variant/20 relative shadow-2xl flex flex-col group transition-all duration-500 hover:border-primary/30">
                             {/* Preview Header Overlay */}
                             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-surface/90 to-transparent z-10 p-6 pointer-events-none transition-opacity duration-300 group-hover:opacity-40">
@@ -651,7 +651,7 @@ export default function Builder() {
 
                 {/* Fixed Floating Action Bar (Universal Navigation) */}
                 <div className={`fixed bottom-[100px] left-0 w-full z-40 pointer-events-none`}>
-                    <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center pointer-events-auto">
+                    <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
                         <button
                             onClick={() => {
                                 const from = location.state?.from;
@@ -659,7 +659,7 @@ export default function Builder() {
                                 else if (from === 'myspace') navigate('/myspace');
                                 else navigate('/', { state: { returnToStep: 2 } });
                             }}
-                            className={`group flex items-center justify-center gap-2 text-on-surface hover:text-white transition-all font-headline font-light tracking-widest px-6 py-3 md:px-8 md:py-3.5 cursor-pointer rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest border border-outline-variant/20 backdrop-blur-xl shadow-lg shadow-black/20 text-sm md:text-base`}
+                            className={`group flex items-center justify-center gap-2 text-on-surface hover:text-white transition-all font-headline font-light tracking-widest px-6 py-3 md:px-8 md:py-3.5 cursor-pointer rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest border border-outline-variant/20 backdrop-blur-xl shadow-lg shadow-black/20 text-sm md:text-base pointer-events-auto`}
                         >
                             <span className="material-symbols-outlined text-base md:text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
                             上一步
@@ -669,7 +669,7 @@ export default function Builder() {
                             type="submit"
                             form="builder-form"
                             disabled={loading || domainStatus === 'checking'}
-                            className="group flex items-center justify-center gap-2 text-primary hover:text-primary-container transition-all font-headline font-medium tracking-widest px-8 py-3 md:px-10 md:py-3.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 backdrop-blur-xl shadow-lg shadow-primary/20 disabled:opacity-60 disabled:cursor-not-allowed text-sm md:text-base w-max ease-out duration-500 hover:scale-[1.02] active:scale-95"
+                            className="group flex items-center justify-center gap-2 text-primary hover:text-primary-container transition-all font-headline font-medium tracking-widest px-8 py-3 md:px-10 md:py-3.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 backdrop-blur-xl shadow-lg shadow-primary/20 disabled:opacity-60 disabled:cursor-not-allowed text-sm md:text-base w-max ease-out duration-500 hover:scale-[1.02] active:scale-95 pointer-events-auto"
                         >
                             <span>{loading ? (editSubdomain ? '全网刷新' : '宇宙级生成') : (editSubdomain ? '更新当前宇宙' : '点亮这片星空')}</span>
                             {!loading && <span className="material-symbols-outlined text-base md:text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>}

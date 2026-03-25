@@ -147,7 +147,7 @@ export default function Home() {
                 style={{ transform: `translateY(-${activeScreen * 100}dvh)` }}
             >
                 {/* ─── SCREEN 0: Hero Intent Selection ─── */}
-                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center relative pt-20 md:pt-0 pb-32 md:pb-0 overflow-y-auto md:overflow-hidden custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center relative pt-28 md:pt-0 pb-32 md:pb-0 overflow-y-auto md:overflow-hidden custom-scrollbar">
                     <div className="absolute top-1/4 -left-20 w-[800px] h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(224,142,254,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(144,148,250,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] pointer-events-none z-0" style={{ background: 'radial-gradient(ellipse at center, rgba(36,32,74,0.4) 0%, transparent 60%)' }}></div>
@@ -203,7 +203,7 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 1: Scene Selection Options ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-20 pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-28 pb-32 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
 
                     <main className="flex-grow flex flex-col items-center justify-start px-5 md:px-12 max-w-5xl mx-auto w-full">
                         <header className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
@@ -261,9 +261,15 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 2: Template Recommendations ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-24 pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-28 pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                    {/* Immersive Background Glow for Screen 2 */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none z-0 overflow-hidden">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full blur-[120px] opacity-20" 
+                             style={{ background: `radial-gradient(circle, ${selectedType === 'confession' ? 'rgba(224,142,254,1)' : selectedType === 'apology' ? 'rgba(144,148,250,1)' : 'rgba(255,215,0,0.8)'} 0%, transparent 70%)` }}>
+                        </div>
+                    </div>
 
-                    <main className="flex-grow flex flex-col items-center justify-start px-5 max-w-[1600px] mx-auto w-full">
+                    <main className="flex-grow flex flex-col items-center justify-start px-5 max-w-7xl mx-auto w-full relative z-10 animate-in fade-in zoom-in-95 duration-1000">
                         
                         <section className="mb-12 md:mb-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -295,11 +301,11 @@ export default function Home() {
                                         </div>
                                     )}
                                     <div className="mb-6 md:mb-8">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 md:mb-6 bg-${tpl.color}/10 shadow-sm`}>
-                                            <span className={`material-symbols-outlined text-${tpl.color}`}>{tpl.icon}</span>
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/20 group-hover:scale-110 transition-transform duration-500`}>
+                                            <span className={`material-symbols-outlined text-2xl text-${tpl.color}`}>{tpl.icon}</span>
                                         </div>
-                                        <h3 className="text-xl md:text-2xl font-headline font-normal mb-2 md:mb-3">{tpl.name}</h3>
-                                        <p className="text-on-surface-variant text-sm md:text-base mb-4 md:mb-6 leading-relaxed">{tpl.desc}</p>
+                                        <h3 className="text-2xl md:text-3xl font-headline font-light mb-3 md:mb-4 tracking-tight">{tpl.name}</h3>
+                                        <p className="text-on-surface-variant/80 text-sm md:text-base mb-6 md:mb-8 leading-relaxed font-light">{tpl.desc}</p>
                                     </div>
                                     
                                     <div className={`flex-grow bg-surface-container-lowest/30 rounded-lg p-5 mb-8 italic text-on-surface/80 text-xs md:text-sm leading-loose border-l-2 border-${tpl.color}/40 shadow-inner`}>
@@ -336,11 +342,11 @@ export default function Home() {
 
             {/* Fixed Floating Action Bar (Screens 1 & 2) */}
             <div className={`fixed bottom-[130px] md:bottom-[100px] left-0 w-full z-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] transform ${activeScreen > 0 && activeScreen < 3 ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                <div className="w-full max-w-[1600px] mx-auto px-5 md:px-12 flex justify-between items-center pointer-events-auto">
+                <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
                     <button 
                         onClick={() => setActiveScreen(Math.max(0, activeScreen - 1))}
                         disabled={activeScreen === 0}
-                        className={`group hide-on-keyboard flex items-center justify-center gap-2 text-on-surface hover:text-white transition-all font-headline font-light tracking-widest px-6 py-3 md:px-8 md:py-3.5 cursor-pointer rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest border border-outline-variant/20 backdrop-blur-xl shadow-lg shadow-black/20 text-sm md:text-base disabled:opacity-0 disabled:cursor-not-allowed`}
+                        className={`group hide-on-keyboard flex items-center justify-center gap-2 text-on-surface hover:text-white transition-all font-headline font-light tracking-widest px-6 py-3 md:px-8 md:py-3.5 cursor-pointer rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest border border-outline-variant/20 backdrop-blur-xl shadow-lg shadow-black/20 text-sm md:text-base disabled:opacity-0 disabled:cursor-not-allowed pointer-events-auto`}
                     >
                         <span className="material-symbols-outlined text-base md:text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
                         上一步
@@ -351,7 +357,7 @@ export default function Home() {
                         <button 
                             onClick={handleNextToTemplates}
                             disabled={selectedIndex === -1 && customText.trim() === ''}
-                            className={`absolute right-0 top-1/2 -translate-y-1/2 group flex items-center justify-center gap-2 text-primary hover:text-primary-container transition-all font-headline font-medium tracking-widest px-8 py-3 md:px-10 md:py-3.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 backdrop-blur-xl shadow-lg shadow-primary/20 disabled:opacity-0 disabled:pointer-events-none text-sm md:text-base w-max ease-out duration-500 ${activeScreen === 1 ? 'scale-100 opacity-100 delay-100 pointer-events-auto z-10' : 'scale-75 opacity-0 pointer-events-none z-0'}`}
+                            className={`group flex items-center justify-center gap-2 text-primary hover:text-primary-container transition-all font-headline font-medium tracking-widest px-8 py-3 md:px-10 md:py-3.5 cursor-pointer rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 backdrop-blur-xl shadow-lg shadow-primary/20 text-sm md:text-base pointer-events-auto transition-all duration-500 ${activeScreen === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10 pointer-events-none'} disabled:opacity-40 disabled:cursor-not-allowed`}
                         >
                             下一步
                             <span className="material-symbols-outlined text-base md:text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
