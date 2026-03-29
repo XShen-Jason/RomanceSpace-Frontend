@@ -8,9 +8,13 @@ export default function Gallery() {
     const location = useLocation();
     const navigate = useNavigate();
     
-    // Read intent from Router state or default to 'all'
-    const initialIntent = location.state?.intent || 'all';
-    const [activeIntent, setActiveIntent] = useState(initialIntent);
+    // Read intent/category from Router state or default to 'all'
+    const initialCategory = location.state?.intent || 'all';
+    const initialOption = location.state?.sceneText || 'all';
+    
+    const [activeCategory, setActiveCategory] = useState(initialCategory);
+    const [activeOption, setActiveOption] = useState(initialOption);
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,16 +47,27 @@ export default function Gallery() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Filter templates based on active category
+    // Filter templates based on active category and option
     const filteredTemplates = useMemo(() => {
-        if (activeIntent === 'all') return templates;
+        if (activeCategory === 'all') return templates;
         
-        const intentConfig = INTENT_DATA[activeIntent];
+        const intentConfig = INTENT_DATA[activeCategory];
         if (!intentConfig) return templates;
 
-        const allowedIds = intentConfig.templates.map(t => t.id);
-        return templates.filter(t => allowedIds.includes(t.name));
-    }, [templates, activeIntent]);
+        const categoryTemplates = templates.filter(t => {
+            // Check if categories array exists (new format) or name matches old format
+            const cats = t.categories || [];
+            return cats.includes(activeCategory);
+        });
+
+        if (activeOption === 'all' || activeOption === '探索全部') return categoryTemplates;
+
+        // Filter by specific Scene ID
+        return categoryTemplates.filter(t => {
+            // Check if template matches the active option's ID or text (for compatibility)
+            return t.scene === activeOption || (t.tags && t.tags.includes(activeOption));
+        });
+    }, [templates, activeCategory, activeOption]);
 
     return (
         <div className="w-full min-h-screen pt-20 pb-24 px-5 md:px-12 max-w-[1600px] mx-auto flex flex-col font-body text-on-surface relative">
@@ -63,66 +78,109 @@ export default function Gallery() {
             <div className="fixed top-1/4 -right-24 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
             <div className="fixed bottom-1/4 -left-24 w-[300px] h-[300px] bg-secondary/5 rounded-full blur-[80px] pointer-events-none z-0"></div>
 
-            {/* Context Header */}
-            <header className="mb-8 lg:mb-16 relative z-10 w-full max-w-4xl">
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary-dim text-[10px] font-bold tracking-widest uppercase border border-primary/20">
-                        {activeIntent === 'all' ? '探索全部' : `${INTENT_DATA[activeIntent].categoryLabel}`}
-                    </span>
-                    {location.state?.sceneText && activeIntent === location.state?.intent && (
-                        <span className="px-2.5 py-1 rounded-full bg-secondary/10 text-secondary-dim text-[10px] font-bold tracking-widest uppercase border border-secondary/20 line-clamp-1 max-w-[200px]">
-                            {location.state.sceneText}
-                        </span>
-                    )}
-                </div>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-headline font-light text-on-surface tracking-tight leading-tight mb-4">
-                    {activeIntent === 'all' ? '发现更多表达心意的方式' : INTENT_DATA[activeIntent].title}
-                </h1>
-                <p className="text-on-surface-variant text-base md:text-lg font-light leading-relaxed opacity-90">
-                    {activeIntent === 'all' ? '从海量优质模板中，挑选最契合你此刻情绪的那一个。' : INTENT_DATA[activeIntent].subtitle}
-                </p>
-            </header>
-
-            {/* Main Layout Split */}
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 flex-1">
-                
-                {/* Left Categories Navbar (Sticky) */}
-                <aside className="w-full lg:w-64 shrink-0">
-                    <div className="sticky top-24 bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10 rounded-2xl p-4 md:p-6 shadow-lg">
-                        <div className="hidden lg:block mb-6 px-2">
-                            <h2 className="text-sm font-headline font-bold uppercase tracking-widest text-primary-dim opacity-80">Categories</h2>
-                            <p className="text-on-surface-variant text-xs mt-1 font-light tracking-wide">按情绪场景筛选</p>
+            {/* Floating Filter Header (Sticky) */}
+            <div className="sticky top-16 md:top-20 z-30 -mx-5 md:-mx-12 px-5 md:px-12 py-3 md:py-5 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/10 mb-8 shadow-sm">
+                <div className="max-w-[1600px] mx-auto">
+                    
+                    {/* --- MOBILE FILTER TRIGGER (< md) --- */}
+                    <div className="flex items-center justify-between md:hidden">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-0.5">当前筛选</span>
+                            <span className="text-sm font-medium text-primary flex items-center gap-1">
+                                {activeCategory === 'all' ? '全部模板' : INTENT_DATA[activeCategory].categoryLabel}
+                                {activeCategory !== 'all' && activeOption !== 'all' && (
+                                    <>
+                                        <span className="text-on-surface-variant/50">/</span>
+                                        <span className="text-secondary-dim">
+                                            {INTENT_DATA[activeCategory].options.find(o => o.id === activeOption)?.text || activeOption}
+                                        </span>
+                                    </>
+                                )}
+                            </span>
                         </div>
-                        <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 no-scrollbar select-none">
+                        <button 
+                            onClick={() => setIsMobileFilterOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl border border-primary/20 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-sm">tune</span>
+                            <span className="text-sm font-medium">筛选</span>
+                        </button>
+                    </div>
+
+                    {/* --- DESKTOP FILTER (>= md) --- */}
+                    <div className="hidden md:block space-y-4 md:space-y-5">
+                        {/* Level 1: Categories (Emotions) */}
+                        <div className="flex flex-wrap items-center gap-2 md:gap-3 pb-1">
                             <button 
-                                onClick={() => setActiveIntent('all')}
-                                className={`flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl transition-all duration-300 font-medium tracking-wide whitespace-nowrap lg:whitespace-normal ${activeIntent === 'all' ? 'text-primary-fixed bg-primary/10 border border-primary/20 ring-1 ring-primary/20' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-transparent'}`}
+                                onClick={() => { setActiveCategory('all'); setActiveOption('all'); }}
+                                className={`flex items-center gap-2 px-5 py-2 xl:px-6 xl:py-2.5 rounded-full transition-all duration-300 font-medium border shadow-sm flex-shrink-0 ${activeCategory === 'all' ? 'bg-primary/20 text-primary-fixed border-primary/40 shadow-primary/10' : 'text-on-surface-variant hover:bg-surface-container-high border-outline-variant/10 bg-surface-container-lowest'}`}
                             >
-                                <span className="material-symbols-outlined text-primary-dim text-lg lg:text-xl">grid_view</span>
-                                <span className="text-sm lg:text-base">全部模板</span>
+                                <span className="material-symbols-outlined text-lg">grid_view</span>
+                                <span className="text-sm">全部模板</span>
                             </button>
                             {Object.entries(INTENT_DATA).map(([key, data]) => (
                                 <button 
                                     key={key}
-                                    onClick={() => setActiveIntent(key)}
-                                    className={`flex items-center gap-2 lg:gap-3 px-4 py-2.5 lg:py-3 rounded-xl transition-all duration-300 font-medium tracking-wide whitespace-nowrap lg:whitespace-normal ${activeIntent === key ? 'text-primary-fixed bg-primary/10 border border-primary/20 ring-1 ring-primary/20' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-transparent'}`}
+                                    onClick={() => { setActiveCategory(key); setActiveOption('all'); }}
+                                    className={`flex items-center gap-2 px-5 py-2 xl:px-6 xl:py-2.5 rounded-full transition-all duration-300 font-medium border shadow-sm flex-shrink-0 ${activeCategory === key ? 'bg-primary/20 text-primary-fixed border-primary/40 shadow-primary/10' : 'text-on-surface-variant hover:bg-surface-container-high border-outline-variant/10 bg-surface-container-lowest'}`}
                                 >
-                                    <span className="material-symbols-outlined text-primary-dim text-lg lg:text-xl">{data.icon}</span>
-                                    <span className="text-sm lg:text-base">{data.categoryLabel}</span>
+                                    <span className="material-symbols-outlined text-lg">{data.icon}</span>
+                                    <span className="text-sm">{data.categoryLabel}</span>
                                 </button>
                             ))}
                         </div>
-                    </div>
-                </aside>
 
-                {/* Templates Grid Area */}
-                <main className="flex-1 min-w-0 flex flex-col">
-                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-outline-variant/10">
-                        <h3 className="text-xl md:text-2xl font-headline font-medium text-on-surface">为你推荐</h3>
-                        <span className="text-sm font-medium text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
-                            {filteredTemplates.length} 个模板
-                        </span>
+                        {/* Level 2: Scenarios (Intents) - Only show if a specific category is active */}
+                        {activeCategory !== 'all' && (
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3 animate-in fade-in slide-in-from-top-2 duration-300 pb-1">
+                                <div className="flex items-center shrink-0 mb-0 text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-bold ml-2 mr-2">
+                                    <span className="material-symbols-outlined text-sm mr-1">subtitles</span>
+                                    细分场景
+                                </div>
+                                <button 
+                                    onClick={() => setActiveOption('all')}
+                                    className={`px-5 py-2 rounded-full text-xs font-medium transition-all border flex-shrink-0 ${activeOption === 'all' ? 'bg-secondary/20 text-secondary-dim border-secondary/40 shadow-sm' : 'bg-surface-container-low text-on-surface-variant/60 border-outline-variant/10 hover:bg-surface-container-high'}`}
+                                >
+                                    探索全部
+                                </button>
+                                {INTENT_DATA[activeCategory].options.map((opt, idx) => (
+                                    <button 
+                                        key={idx}
+                                        onClick={() => setActiveOption(opt.id)}
+                                        className={`px-5 py-2 rounded-full text-xs font-medium transition-all border flex-shrink-0 ${activeOption === opt.id ? 'bg-secondary/20 text-secondary-dim border-secondary/40 shadow-sm' : 'bg-surface-container-low text-on-surface-variant/60 border-outline-variant/10 hover:bg-surface-container-high'}`}
+                                    >
+                                        {opt.text}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
+                </div>
+            </div>
+
+            <main className="flex-1 min-w-0 flex flex-col relative z-10">
+                {/* Context Header (Simplified) */}
+                <header className="mb-4 relative z-10 w-full">
+                    <h1 className="text-3xl md:text-5xl font-headline font-light text-on-surface tracking-tight leading-tight">
+                        {activeCategory === 'all' ? '发现更多表达心意的方式' : INTENT_DATA[activeCategory].title}
+                    </h1>
+                </header>
+
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-outline-variant/10">
+                    <div className="flex flex-col gap-1">
+                        <h3 className="text-xl md:text-2xl font-headline font-medium text-on-surface">
+                            {activeCategory === 'all' ? '为你推荐' : INTENT_DATA[activeCategory].categoryLabel}
+                        </h3>
+                        {activeOption !== 'all' && (
+                            <p className="text-sm text-secondary-dim font-light tracking-wide italic">
+                                “{INTENT_DATA[activeCategory].options.find(o => o.id === activeOption)?.text || activeOption}”
+                            </p>
+                        )}
+                    </div>
+                    <span className="text-sm font-medium text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
+                        {filteredTemplates.length} 个模板
+                    </span>
+                </div>
                     
                     {loading && (
                         <div className="flex justify-center items-center py-24">
@@ -147,9 +205,9 @@ export default function Gallery() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 lg:gap-8 content-start mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8 content-start mb-12">
                         {filteredTemplates.map((template, idx) => {
-                            const isRecommended = idx < 2 && activeIntent !== 'all';
+                            const isRecommended = idx < 2 && activeCategory !== 'all' && activeOption === 'all';
                             const isPro = template.tier === 'pro';
 
                             return (
@@ -229,8 +287,82 @@ export default function Gallery() {
                             );
                         })}
                     </div>
-                </main>
+            </main>
+
+            {/* --- MOBILE FILTER DRAWER (< md) --- */}
+            <div className={`fixed inset-0 z-[110] md:hidden transition-opacity duration-300 ${isMobileFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                {/* Backdrop */}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileFilterOpen(false)}></div>
+                
+                {/* Bottom Sheet */}
+                <div className={`absolute bottom-0 left-0 right-0 bg-surface-container border-t border-outline-variant/20 rounded-t-[2rem] p-6 pb-12 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] transition-transform duration-500 ease-[cubic-bezier(0.2,1,0.2,1)] ${isMobileFilterOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                    <div className="w-12 h-1.5 bg-outline-variant/30 rounded-full mx-auto mb-6"></div>
+                    
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-headline font-medium text-on-surface">筛选模板</h3>
+                        <button onClick={() => setIsMobileFilterOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant active:scale-95 transition-transform">
+                            <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+
+                    <div className="overflow-y-auto max-h-[60vh] custom-scrollbar pb-8">
+                        {/* Mobile Level 1 */}
+                        <div className="mb-8">
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant/60 mb-3 flex items-center">
+                                <span className="material-symbols-outlined text-sm mr-1">mood</span>
+                                情绪分类
+                            </h4>
+                            <div className="flex flex-wrap gap-2.5">
+                                <button 
+                                    onClick={() => { setActiveCategory('all'); setActiveOption('all'); }}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all font-medium border text-sm ${activeCategory === 'all' ? 'bg-primary/20 text-primary-fixed border-primary/40' : 'text-on-surface-variant hover:bg-surface-container-high border-outline-variant/10 bg-surface-container-low'}`}
+                                >
+                                    <span className="material-symbols-outlined text-sm">grid_view</span>
+                                    全部
+                                </button>
+                                {Object.entries(INTENT_DATA).map(([key, data]) => (
+                                    <button 
+                                        key={key}
+                                        onClick={() => { setActiveCategory(key); setActiveOption('all'); }}
+                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all font-medium border text-sm ${activeCategory === key ? 'bg-primary/20 text-primary-fixed border-primary/40' : 'text-on-surface-variant hover:bg-surface-container-high border-outline-variant/10 bg-surface-container-low'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-sm">{data.icon}</span>
+                                        {data.categoryLabel}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Mobile Level 2 */}
+                        {activeCategory !== 'all' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant/60 mb-3 flex items-center">
+                                    <span className="material-symbols-outlined text-sm mr-1">subtitles</span>
+                                    细分场景
+                                </h4>
+                                <div className="flex flex-wrap gap-2.5">
+                                    <button 
+                                        onClick={() => { setActiveOption('all'); setIsMobileFilterOpen(false); }}
+                                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${activeOption === 'all' ? 'bg-secondary/20 text-secondary-dim border-secondary/40' : 'bg-surface-container-low text-on-surface-variant border-outline-variant/10'}`}
+                                    >
+                                        探索全部
+                                    </button>
+                                    {INTENT_DATA[activeCategory].options.map((opt, idx) => (
+                                        <button 
+                                            key={idx}
+                                            onClick={() => { setActiveOption(opt.id); setIsMobileFilterOpen(false); }}
+                                            className={`px-4 py-2 mb-1 rounded-xl text-sm font-medium transition-all border text-left ${activeOption === opt.id ? 'bg-secondary/20 text-secondary-dim border-secondary/40' : 'bg-surface-container-low text-on-surface-variant border-outline-variant/10'}`}
+                                        >
+                                            {opt.text}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
+            
 
             <PosterModal
                 isOpen={!!posterTemplate}

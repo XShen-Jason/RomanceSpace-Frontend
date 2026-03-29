@@ -9,12 +9,17 @@ export const INTENT_DATA = {
             { id: 'self_record', text: "记录自我", helper: "把此刻的灿烂写进日记，奖励未来的自己" },
             { id: 'celebrate', text: "庆祝 / 纪念", helper: "标记这个时刻，让它在平淡生活中闪闪发光" },
             { id: 'share', text: "分享 / 展示", helper: "整理成精美页面，在社交平台上展示给所有人" },
+            { id: 'duo_space', text: "双人空间", helper: "属于我们两个人的秘密成就与快乐" },
             { id: 'explore', text: "探索模式", helper: "不想预设意图，先去看看有哪些有趣的模板" }
         ],
         templates: [
-            { id: 'celebration_fireworks', name: '花火灿烂', icon: 'celebration', desc: '绚烂烟火，点燃快乐回忆。', color: 'secondary' },
-            { id: 'polaroid_wall', name: '拍立得影集', icon: 'photo_library', desc: '每一张合照都是一个心动的节点。', color: 'tertiary' },
-            { id: 'breeze_diary', name: '微风手账', icon: 'menu_book', desc: '留住那天的阳光与微风。', color: 'secondary' }
+            { id: 'anniversary', name: '周年纪念帖', icon: 'favorite', desc: '每一个值得纪念的日子，都应被温柔记起。', color: 'secondary' },
+            { id: 'city_trace_map', name: '城市足迹地图', icon: 'map', desc: '在这座城市，写下我们的专属地图。', color: 'tertiary' },
+            { id: 'daily_encouragement', name: '每日打气筒', icon: 'lightbulb', desc: '给自己的一份元气补给站。', color: 'secondary' },
+            { id: 'film_memory_wallv', name: '复古影音墙', icon: 'movie', desc: '让回忆像老胶卷一样缓缓流淌。', color: 'primary' },
+            { id: 'game_achievement', name: '游戏成就达成', icon: 'sports_esports', desc: '恭喜！达成这一项人生专属成就。', color: 'secondary' },
+            { id: 'relationship_booster', name: '感情助推器', icon: 'rocket_launch', desc: '注入新鲜感，让感情持续升温。', color: 'secondary' },
+            { id: 'special_moments', name: '精彩瞬间', icon: 'photo_camera', desc: '捕捉生活中的高光时刻。', color: 'tertiary' }
         ]
     },
     love: {
@@ -27,12 +32,20 @@ export const INTENT_DATA = {
             { id: 'self_record', text: "记录自我", helper: "记录下爱意萌动的瞬间，这是属于我的秘密" },
             { id: 'celebrate', text: "庆祝 / 纪念", helper: "属于我们的专属周年，值得最深刻的纪念" },
             { id: 'share', text: "分享 / 展示", helper: "向世界展示我们的浪漫故事" },
+            { id: 'duo_space', text: "双人空间", helper: "在这个私密空间里，只留下我们的足迹" },
             { id: 'explore', text: "探索模式", helper: "寻觅更多表达爱意的新奇方式" }
         ],
         templates: [
             { id: 'starry_confession', name: '星空告白', icon: 'auto_awesome', desc: '星空下的告白，最极致浪漫。', color: 'primary' },
-            { id: 'love_letter', name: '情书时代', icon: 'favorite', desc: '字字句句，皆是少年意气。', color: 'secondary' },
-            { id: 'neon_heart', name: '霓虹心跳', icon: 'monitor_heart', desc: '大胆跳动的心，直白的爱意。', color: 'tertiary' }
+            { id: 'love_letter', name: '纸间情书', icon: 'favorite', desc: '字字句句，皆是少年意气。', color: 'secondary' },
+            { id: 'cyber_confession_neon', name: '赛博告白', icon: 'bolt', desc: '赛博朋克风格的直白心意表达。', color: 'primary' },
+            { id: 'endless_romance', name: '无尽浪漫', icon: 'infinite', desc: '关于浪漫，我们有无尽的想象。', color: 'secondary' },
+            { id: 'father_love', name: '父爱如山', icon: 'man', desc: '有些爱不必开口，沉默即是重若千钧。', color: 'tertiary' },
+            { id: 'magic_contract', name: '魔法爱情契约', icon: 'auto_awesome', desc: '在此立约，共同开启一段奇幻旅程。', color: 'primary' },
+            { id: 'oriental_poetry_and_painting_love_letter', name: '古韵诗画', icon: 'brush', desc: '笔墨书香中，藏着对你的思念。', color: 'tertiary' },
+            { id: 'anniversary', name: '周年纪念帖', icon: 'favorite', desc: '每一个值得纪念的日子，都应被温柔记起。', color: 'secondary' },
+            { id: 'special_moments', name: '精彩瞬间', icon: 'photo_camera', desc: '捕捉生活中的高光时刻。', color: 'tertiary' },
+            { id: 'relationship_booster', name: '感情助推器', icon: 'rocket_launch', desc: '注入新鲜感，让感情持续升温。', color: 'secondary' }
         ]
     },
     guilt: {
@@ -48,8 +61,8 @@ export const INTENT_DATA = {
             { id: 'explore', text: "探索模式", helper: "看看有没有更温和的方式，能化解此刻的尴尬" }
         ],
         templates: [
-            { id: 'rainy_apology', name: '雨夜低语', icon: 'water_drop', desc: '润物无声，诚意满分。', color: 'primary' },
-            { id: 'warm_light', name: '微光倾听', icon: 'wb_incandescent', desc: '在微光中等待对方的回应。', color: 'secondary' }
+            { id: 'oriental_poetry_and_painting_love_letter', name: '古韵诗画', icon: 'brush', desc: '静谧的笔墨，最适合传递和解的心意。', color: 'tertiary' },
+            { id: 'daily_encouragement', name: '每日打气筒', icon: 'lightbulb', desc: '与其深陷自责，不如尝试一点点改变。', color: 'secondary' }
         ]
     },
     sadness: {
@@ -65,9 +78,8 @@ export const INTENT_DATA = {
             { id: 'explore', text: "探索模式", helper: "在慢节奏的模板中，给情绪找一个出口" }
         ],
         templates: [
-            { id: 'vintage_film', name: '复古胶卷', icon: 'movie', desc: '泛黄的胶片，记录隽永的记忆。', color: 'primary' },
-            { id: 'broken_glass', name: '时光拼图', icon: 'extension', desc: '拼合碎片，重现模糊的过往。', color: 'tertiary' },
-            { id: 'sunset_glow', name: '落日余晖', icon: 'wb_twilight', desc: '温柔的黄昏，静谧的离场。', color: 'tertiary' }
+            { id: 'film_memory_wallv', name: '复古影音墙', icon: 'movie', desc: '泛黄的胶片，记录隽永的记忆。', color: 'primary' },
+            { id: 'emotion_tree_hole', name: '情绪树洞', icon: 'nature', desc: '有些不能说的秘密，就让它在这里生根发芽。', color: 'primary' }
         ]
     },
     stress: {
@@ -82,8 +94,8 @@ export const INTENT_DATA = {
             { id: 'explore', text: "探索模式", helper: "不想思考，只想随便逛逛，找点治愈的感觉" }
         ],
         templates: [
-            { id: 'lofi_room', name: 'Lofi 房间', icon: 'headphones', desc: '伴随节拍，让情绪彻底放松。', color: 'secondary' },
-            { id: 'minimal_white', name: '极简白纸', icon: 'check_box_outline_blank', desc: '留白，给紧绷的神经透透气。', color: 'primary' }
+            { id: 'self_care_room', name: '自愈小站', icon: 'self_care', desc: '伴随节拍，让情绪彻底放松。', color: 'primary' },
+            { id: 'emotion_tree_hole', name: '情绪树洞', icon: 'nature', desc: '在极简的空白中，给紧绷的神经透透气。', color: 'primary' }
         ]
     },
     calm: {
@@ -99,8 +111,11 @@ export const INTENT_DATA = {
             { id: 'explore', text: "探索模式", helper: "看看还有哪些极简风格，能衬托当下的心境" }
         ],
         templates: [
-            { id: 'constellation_map', name: '星轨连线', icon: 'share', desc: '每一颗星，代表一个感恩的瞬间。', color: 'tertiary' },
-            { id: 'minimal_white', name: '极简白纸', icon: 'check_box_outline_blank', desc: '平和的心境，简单的表达。', color: 'primary' }
+            { id: 'city_trace_map', name: '城市足迹地图', icon: 'map', desc: '每一段路，都代表一个感恩的瞬间。', color: 'tertiary' },
+            { id: 'self_care_room', name: '自愈小站', icon: 'self_care', desc: '平和的心境，简单的表达。', color: 'primary' },
+            { id: 'daily_encouragement', name: '每日打气筒', icon: 'lightbulb', desc: '记录下今日份的小确幸。', color: 'secondary' },
+            { id: 'father_love', name: '父爱如山', icon: 'man', desc: '在深切的安稳中，感受岁月的馈赠。', color: 'tertiary' },
+            { id: 'oriental_poetry_and_painting_love_letter', name: '古韵诗画', icon: 'brush', desc: '笔墨书香中，藏着对生活的淡定坦然。', color: 'tertiary' }
         ]
     },
     neutral: {

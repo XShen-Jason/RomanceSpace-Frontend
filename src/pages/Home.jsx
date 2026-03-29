@@ -10,6 +10,7 @@ export default function Home() {
     const [selectedType, setSelectedType] = useState('joy');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [customText, setCustomText] = useState('');
+    const [selectedTemplateId, setSelectedTemplateId] = useState(null);
 
     const [isNavigating, setIsNavigating] = useState(false);
 
@@ -31,6 +32,7 @@ export default function Home() {
         setSelectedType(type);
         setSelectedIndex(0);
         setCustomText('');
+        setSelectedTemplateId(null);
         setActiveScreen(1); // Go to Screen 1
     };
 
@@ -49,6 +51,7 @@ export default function Home() {
             return;
         }
 
+        setSelectedTemplateId(null);
         setActiveScreen(2);
     };
 
@@ -89,12 +92,12 @@ export default function Home() {
                 style={{ transform: `translateY(-${activeScreen * 100}dvh)` }}
             >
                 {/* ─── SCREEN 0: Hero Intent Selection ─── */}
-                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[72px] md:pt-[80px] pb-[72px] md:pb-[24px] relative overflow-y-auto md:overflow-hidden custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[72px] md:pt-[80px] pb-[120px] md:pb-[24px] relative overflow-y-auto md:overflow-hidden custom-scrollbar">
                     <div className="absolute top-1/4 -left-20 w-[800px] h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(224,142,254,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(144,148,250,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] pointer-events-none z-0" style={{ background: 'radial-gradient(ellipse at center, rgba(36,32,74,0.4) 0%, transparent 60%)' }}></div>
 
-                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8">
+                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-4">
                         <div className="text-center max-w-4xl w-full mb-8 md:mb-10 lg:mb-12 leading-relaxed">
                             <h1 className="font-headline text-4xl md:text-6xl lg:text-[5rem] font-light tracking-tight text-on-surface mb-4 md:mb-6 leading-tight">
                                 有些情绪，值得被<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">认真安放</span>
@@ -104,7 +107,7 @@ export default function Home() {
                             </p>
                         </div>
 
-                        <div className="w-full max-w-[1100px] flex flex-wrap justify-center content-center gap-3 sm:gap-4 md:gap-5 mx-auto">
+                        <div className="w-full max-w-[1100px] flex flex-wrap justify-center content-center gap-3 sm:gap-4 md:gap-5 mx-auto pb-4 md:pb-0">
                             {Object.entries(INTENT_DATA).map(([key, data]) => (
                                 <button 
                                     key={key} 
@@ -136,34 +139,34 @@ export default function Home() {
                             </p>
                         </header>
                         
-                        <div className="w-full max-w-2xl space-y-4 mb-32">
+                        <div className="w-full max-w-2xl space-y-3 mb-24 md:mb-32">
                             {currentIntent.options.map((opt, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => { setSelectedIndex(idx); setCustomText(''); }}
-                                    className={`w-full text-left group px-6 md:px-8 py-6 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start 
+                                    className={`w-full text-left group px-5 md:px-8 py-4 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start 
                                         ${selectedIndex === idx 
-                                            ? 'bg-primary/10 border-primary/50 shadow-[0_0_30px_rgba(224,142,254,0.15)] ring-1 ring-primary/20 transform scale-[1.02]' 
-                                            : 'bg-surface-container-low border-outline-variant/10 hover:bg-surface-container hover:border-primary/20 hover:shadow-[0_0_30px_rgba(224,142,254,0.1)]'
+                                            ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.02]' 
+                                            : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]'
                                         }`}
                                 >
-                                    <span className={`text-lg md:text-xl lg:text-2xl font-light transition-colors duration-300 ${selectedIndex === idx ? 'text-primary' : 'text-on-surface group-hover:text-primary-dim'}`}>
+                                    <span className={`text-base md:text-xl lg:text-2xl font-light transition-colors duration-300 ${selectedIndex === idx ? 'text-primary font-medium' : 'text-on-surface group-hover:text-primary-dim'}`}>
                                         "{opt.text}"
                                     </span>
-                                    <span className={`text-sm md:text-base font-light transition-all duration-300 overflow-hidden ${selectedIndex === idx ? 'text-primary-dim/90 mt-3 max-h-12 opacity-100' : 'text-on-surface-variant/50 max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100 group-hover:mt-3'}`}>
+                                    <span className={`text-xs md:text-base font-light transition-all duration-300 overflow-hidden ${selectedIndex === idx ? 'text-primary-dim mt-2 md:mt-3 max-h-12 opacity-100' : 'text-on-surface-variant/60 max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100 group-hover:mt-2 md:group-hover:mt-3'}`}>
                                         {opt.helper}
                                     </span>
                                 </button>
                             ))}
                             <div
                                 onClick={() => setSelectedIndex(-1)}
-                                className={`w-full text-left group px-6 md:px-8 py-6 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start cursor-pointer
+                                className={`w-full text-left group px-5 md:px-8 py-4 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start cursor-pointer
                                     ${selectedIndex === -1 
-                                        ? 'bg-primary/10 border-primary/50 shadow-[0_0_30px_rgba(224,142,254,0.15)] ring-1 ring-primary/20 transform scale-[1.02]' 
-                                        : 'bg-surface-container-low border-outline-variant/10 hover:bg-surface-container hover:border-primary/20 hover:shadow-[0_0_30px_rgba(224,142,254,0.1)]'
+                                        ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.02]' 
+                                        : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]'
                                     }`}
                             >
-                                <span className={`text-sm md:text-base font-medium mb-3 transition-colors ${selectedIndex === -1 ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary-dim'}`}>
+                                <span className={`text-sm md:text-base font-medium mb-2 md:mb-3 transition-colors ${selectedIndex === -1 ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary-dim'}`}>
                                     或者，自己写下此刻想说的话：
                                 </span>
                                 <textarea 
@@ -174,7 +177,7 @@ export default function Home() {
                                     }}
                                     onClick={(e) => { e.stopPropagation(); setSelectedIndex(-1); }}
                                     placeholder="输入你的专属意境卡片文字..."
-                                    className="w-full bg-surface-container-highest/50 border border-outline-variant/20 rounded-lg p-4 text-on-surface text-base md:text-lg focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 resize-none h-24 font-light transition-all"
+                                    className="w-full bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg p-3 md:p-4 text-on-surface text-sm md:text-lg focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 resize-none h-20 md:h-24 font-light transition-all"
                                 />
                             </div>
                         </div>
@@ -213,36 +216,51 @@ export default function Home() {
                             </div>
                         </section>
 
-                        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 w-full mb-16">
-                            {currentIntent.templates.map((tpl, i) => (
-                                <div key={tpl.id} className={`glass-card rounded-2xl p-6 md:p-8 flex flex-col h-full relative overflow-hidden group hover:bg-surface-variant/80 transition-all duration-500 ${i === 0 ? 'shadow-[0_0_30px_rgba(224,142,254,0.15)] ring-1 ring-primary/30' : ''}`}>
+                        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 w-full mb-12 md:mb-16 mt-2">
+                            {currentIntent.templates.map((tpl, i) => {
+                                const isSelected = selectedTemplateId === tpl.id;
+                                const isDefaultHighlighted = selectedTemplateId === null && i === 0;
+                                
+                                const cardStyle = isSelected 
+                                    ? 'bg-primary/20 border-primary/60 shadow-[0_0_30px_rgba(224,142,254,0.3)] ring-1 ring-primary/40 transform scale-[1.02]' 
+                                    : (isDefaultHighlighted 
+                                        ? 'bg-primary/5 shadow-[0_0_15px_rgba(224,142,254,0.1)] ring-1 ring-primary/20 border-primary/30 hover:border-primary/50 hover:bg-primary/10' 
+                                        : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]');
+
+                                const buttonStyle = isSelected
+                                    ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-[0_10px_20px_rgba(224,142,254,0.3)]'
+                                    : 'bg-surface-variant text-on-surface border border-outline-variant/40 hover:bg-surface-container-high hover:border-primary/40';
+
+                                return (
+                                <div 
+                                    key={tpl.id} 
+                                    onClick={() => setSelectedTemplateId(tpl.id)}
+                                    className={`glass-card rounded-2xl p-5 md:p-8 flex flex-col h-full relative overflow-hidden group transition-all duration-500 border cursor-pointer ${cardStyle}`}
+                                >
                                     {i === 0 && (
-                                        <div className="absolute top-0 right-0 p-4">
-                                            <span className="bg-primary/20 text-primary-fixed text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border border-primary/30 shadow-sm shadow-primary/40">极佳适配</span>
+                                        <div className="absolute top-0 right-0 p-3 md:p-4 z-10 transition-all duration-500">
+                                            <span className={`uppercase text-[10px] tracking-widest px-3 py-1 rounded-full border shadow-sm transition-all duration-500 ${isSelected ? 'bg-primary/20 text-primary font-medium border-primary/40 shadow-primary/40' : (isDefaultHighlighted ? 'bg-primary/10 text-primary-dim border-primary/20 shadow-primary/10' : 'bg-surface-variant text-on-surface-variant/50 border-outline-variant/30 opacity-70')}`}>极佳适配</span>
                                         </div>
                                     )}
-                                    <div className="mb-6 md:mb-8">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/20 group-hover:scale-110 transition-transform duration-500`}>
-                                            <span className={`material-symbols-outlined text-2xl text-${tpl.color}`}>{tpl.icon}</span>
+                                    <div className="mb-4 md:mb-8 relative z-10">
+                                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-4 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/30 group-hover:scale-110 transition-transform duration-500`}>
+                                            <span className={`material-symbols-outlined text-xl md:text-2xl text-${tpl.color}`}>{tpl.icon}</span>
                                         </div>
-                                        <h3 className="text-2xl md:text-3xl font-headline font-light mb-3 md:mb-4 tracking-tight">{tpl.name}</h3>
-                                        <p className="text-on-surface-variant/80 text-sm md:text-base mb-6 md:mb-8 leading-relaxed font-light">{tpl.desc}</p>
+                                        <h3 className={`text-xl md:text-3xl font-headline font-medium md:font-light mb-2 md:mb-4 tracking-tight transition-colors duration-500 ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{tpl.name}</h3>
+                                        <p className="text-on-surface-variant/90 text-xs md:text-base leading-relaxed font-light">{tpl.desc}</p>
                                     </div>
                                     
-                                    <div className={`flex-grow bg-surface-container-lowest/30 rounded-lg p-5 mb-8 italic text-on-surface/80 text-xs md:text-sm leading-loose border-l-2 border-${tpl.color}/40 shadow-inner`}>
-                                        <span className="text-on-surface-variant line-clamp-4">“...{finalSelectedSceneText.slice(0, 100)}...”</span>
+                                    <div className={`flex-grow bg-surface-container-lowest/40 rounded-lg p-4 md:p-5 mb-5 md:mb-8 italic text-on-surface/90 text-[11px] md:text-sm leading-loose border-l-2 border-${tpl.color}/50 shadow-inner relative z-10 transition-colors duration-500 ${isSelected ? 'bg-surface-container/50' : ''}`}>
+                                        <span className="text-on-surface-variant line-clamp-3 md:line-clamp-4">“...{finalSelectedSceneText.slice(0, 100)}...”</span>
                                     </div>
 
                                     <button 
-                                        onClick={() => handleUseTemplate(tpl.id)}
-                                        className={`w-full py-4 rounded-xl font-medium transition-all duration-300 active:scale-95 ${i === 0 
-                                            ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary hover:scale-[1.02] shadow-[0_10px_20px_rgba(224,142,254,0.2)]' 
-                                            : 'bg-surface-variant text-on-surface border border-outline-variant/30 hover:bg-surface-container-high hover:border-primary/30'
-                                        }`}>
-                                        使用此模板
+                                        onClick={(e) => { e.stopPropagation(); setSelectedTemplateId(tpl.id); handleUseTemplate(tpl.id); }}
+                                        className={`w-full py-3 md:py-4 rounded-xl font-medium transition-all duration-300 active:scale-95 text-sm md:text-base relative z-10 ${buttonStyle}`}>
+                                        {isSelected ? '确认使用此模板' : '使用此模板'}
                                     </button>
                                 </div>
-                            ))}
+                            )})}
                         </section>
 
                         <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-12 pb-6 w-full">

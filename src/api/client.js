@@ -57,12 +57,22 @@ export async function listTemplates(adminKey = null) {
     
     // Fallback to the API if the static file doesn't exist yet, or if adminKey is provided
     const options = adminKey ? { headers: { 'X-Admin-Key': adminKey } } : {};
-    const data = await apiFetch('/api/template/list', options);
-    
-    if (!adminKey) {
-        templateCache = data;
+    try {
+        const data = await apiFetch('/api/template/list', options);
+        
+        if (!adminKey) {
+            templateCache = data;
+        }
+        return data;
+    } catch (err) {
+        // Local development fallback: if the production API is down/times out and no admin key is used,
+        // return an empty structure rather than crashing the Gallery page.
+        if (!adminKey) {
+            console.warn('API fetch failed, falling back to empty templates.', err);
+            return { templates: [] };
+        }
+        throw err;
     }
-    return data;
 }
 
 /**
