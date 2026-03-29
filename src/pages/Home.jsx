@@ -12,6 +12,13 @@ export default function Home() {
     const [customText, setCustomText] = useState('');
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
     const [templates, setTemplates] = useState([]);
+    const [tierConfigs, setTierConfigs] = useState({
+        free: { label: "🌟 体验", bg: "#f0e6ee", color: "var(--pink)" },
+        pro: { label: "💎 高级", bg: "linear-gradient(135deg, #f43f5e, #e11d48)", color: "#fff" },
+        "pro+": { label: "✨ 旗舰", bg: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff" },
+        partner: { label: "👑 合伙人", bg: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff" },
+        admin: { label: "🛡️ 管理员", bg: "#1e293b", color: "#fbbf24" }
+    });
 
     const [isNavigating, setIsNavigating] = useState(false);
 
@@ -31,9 +38,12 @@ export default function Home() {
 
     // Fetch templates from API
     useEffect(() => {
-        import('../api/client.js').then(({ listTemplates }) => {
-            listTemplates()
-                .then(d => {
+        import('../api/client.js').then(({ listTemplates, getTiers }) => {
+            Promise.all([listTemplates(), getTiers()])
+                .then(([d, tierRes]) => {
+                    if (tierRes && tierRes.success && tierRes.tiers) {
+                        setTierConfigs(prev => ({ ...prev, ...tierRes.tiers }));
+                    }
                     const apiTemplates = d.templates || [];
                     // Enrich with local metadata to get fallback colors/icons
                     const metaMap = {};
@@ -94,7 +104,7 @@ export default function Home() {
             });
         };
 
-        if (document.startViewTransition) {
+        if (window.innerWidth >= 768 && document.startViewTransition) {
             document.documentElement.classList.add('slide-up-nav');
             const transition = document.startViewTransition(() => {
                 doNavigate();
@@ -146,10 +156,12 @@ export default function Home() {
         // Normalize template properties for rendering
         return filtered.map(t => ({
             id: t.name || t.id,
+            name: t.name || t.id,
             title: t.title || t.name,
             desc: t.desc || '精美的响应式网页模板，为你的表达增添专属色彩。',
             icon: t.icon || 'web',
-            color: t.color || 'primary'
+            color: t.color || 'primary',
+            tier: t.tier || 'free'
         }));
     }, [templates, selectedType, selectedIndex, currentIntent]);
 
@@ -161,7 +173,7 @@ export default function Home() {
                 style={{ transform: `translateY(-${activeScreen * 100}dvh)` }}
             >
                 {/* ─── SCREEN 0: Hero Intent Selection ─── */}
-                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[60px] md:pt-[80px] pb-[90px] md:pb-[24px] relative overflow-y-auto md:overflow-hidden custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[60px] md:pt-[80px] pb-[90px] md:pb-[24px] relative overflow-y-auto overflow-x-hidden md:overflow-hidden custom-scrollbar">
                     <div className="absolute top-1/4 -left-20 w-[800px] h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(224,142,254,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(144,148,250,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] pointer-events-none z-0" style={{ background: 'radial-gradient(ellipse at center, rgba(36,32,74,0.4) 0%, transparent 60%)' }}></div>
@@ -196,7 +208,7 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 1: Scene Selection Options ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-32 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-32 flex flex-col relative z-20 overflow-y-auto overflow-x-hidden custom-scrollbar">
 
                     <main className="flex-grow flex flex-col items-center justify-start px-4 md:px-12 max-w-5xl mx-auto w-full">
                         <header className="text-center mb-4 md:mb-16 space-y-1.5 md:space-y-6">
@@ -254,7 +266,7 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 2: Template Recommendations ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-48 flex flex-col relative z-20 overflow-y-auto overflow-x-hidden custom-scrollbar">
                     {/* Immersive Background Glow for Screen 2 */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none z-0 overflow-hidden">
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full blur-[120px] opacity-20"
@@ -292,46 +304,79 @@ export default function Home() {
                                 </div>
                             ) : recommendedTemplates.map((tpl, i) => {
                                 const isSelected = selectedTemplateId === tpl.id;
-                                const isDefaultHighlighted = selectedTemplateId === null && i === 0;
+                                
+                                const getThemeColor = (name) => {
+                                    const lower = (name || '').toLowerCase();
+                                    if (lower.includes('love') || lower.includes('confession') || lower.includes('anniversary')) return 'var(--theme-love)';
+                                    if (lower.includes('joy') || lower.includes('game') || lower.includes('moment')) return 'var(--theme-joy)';
+                                    if (lower.includes('guilt') || lower.includes('repair')) return 'var(--theme-guilt)';
+                                    if (lower.includes('sadness') || lower.includes('tree_hole')) return 'var(--theme-sadness)';
+                                    if (lower.includes('stress') || lower.includes('care')) return 'var(--theme-stress)';
+                                    if (lower.includes('calm') || lower.includes('city')) return 'var(--theme-calm)';
+                                    return 'var(--theme-neutral)';
+                                };
 
-                                const cardStyle = isSelected
-                                    ? 'bg-primary/20 border-primary/60 shadow-[0_0_30px_rgba(224,142,254,0.3)] ring-1 ring-primary/40'
-                                    : (isDefaultHighlighted
-                                        ? 'bg-primary/5 shadow-[0_0_15px_rgba(224,142,254,0.1)] ring-1 ring-primary/20 border-primary/30 hover:border-primary/50 hover:bg-primary/10'
-                                        : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]');
-
-                                const buttonStyle = isSelected
-                                    ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-[0_10px_20px_rgba(224,142,254,0.3)]'
-                                    : 'bg-surface-variant text-on-surface border border-outline-variant/40 hover:bg-surface-container-high hover:border-primary/40';
+                                const themeColor = getThemeColor(tpl.name);
+                                const tierKey = tpl.tier?.toLowerCase() || 'free';
+                                const tier = tierConfigs[tierKey] || tierConfigs.free;
 
                                 return (
-                                    <div
+                                    <div 
                                         key={tpl.id}
                                         onClick={() => setSelectedTemplateId(tpl.id)}
-                                        className={`glass-card rounded-2xl p-4 md:p-8 flex flex-col h-full relative overflow-hidden group transition-all duration-500 border cursor-pointer ${cardStyle}`}
+                                        className={`glass-card--premium shimmer-sweep group p-3.5 md:p-5 xl:p-8 rounded-xl md:rounded-2xl flex flex-col h-full relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer border-2 ${isSelected ? 'border-primary shadow-[0_0_30px_rgba(224,142,254,0.3)] scale-[1.02]' : 'border-transparent hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)] hover:-translate-y-2'}`}
+                                        style={{ '--accent-glow': `${themeColor}20` }}
                                     >
-                                        {i === 0 && (
-                                            <div className="absolute top-0 right-0 p-2 md:p-4 z-10 transition-all duration-500">
-                                                <span className={`uppercase text-[9px] md:text-[10px] tracking-widest px-2 py-0.5 md:px-3 md:py-1 rounded-full border shadow-sm transition-all duration-500 ${isSelected ? 'bg-primary/20 text-primary font-medium border-primary/40 shadow-primary/40' : (isDefaultHighlighted ? 'bg-primary/10 text-primary-dim border-primary/20 shadow-primary/10' : 'bg-surface-variant text-on-surface-variant/50 border-outline-variant/30 opacity-70')}`}>极佳适配</span>
+                                        {/* Ambient Visual Header with Preview Overlay */}
+                                        <div 
+                                            className="ambient-header h-20 md:h-28 -mx-3.5 -mt-3.5 md:-mx-5 md:-mt-5 xl:-mx-8 xl:-mt-8 mb-3 md:mb-5 relative group/header"
+                                            style={{ background: `linear-gradient(135deg, ${themeColor}15 0%, #0d0a27 100%)` }}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface/40"></div>
+                                            <div 
+                                                className="absolute inset-0 opacity-30" 
+                                                style={{ background: `radial-gradient(circle at 30% 30%, ${themeColor} 0%, transparent 60%)`, filter: 'blur(30px)' }}
+                                            ></div>
+
+                                            <div className="premium-badge transition-transform group-hover:scale-110" style={{ background: tier.bg, color: tier.color, border: 'none' }}>
+                                                <span className="text-[10px] md:text-[11px] font-bold tracking-tight whitespace-nowrap">{tier.label}</span>
                                             </div>
-                                        )}
-                                        <div className="mb-3 md:mb-8 relative z-10">
-                                            <div className={`w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/30 group-hover:scale-110 transition-transform duration-500`}>
-                                                <span className={`material-symbols-outlined text-base md:text-2xl text-${tpl.color}`}>{tpl.icon}</span>
+
+                                            {(i === 0 && selectedTemplateId === null) && (
+                                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold tracking-widest uppercase rounded border border-white/10 z-10">
+                                                    极佳适配
+                                                </div>
+                                            )}
+
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+                                                <span className="material-symbols-outlined text-5xl md:text-6xl text-white">
+                                                    {tpl.icon}
+                                                </span>
                                             </div>
-                                            <h3 className={`text-base md:text-3xl font-headline font-medium md:font-light mb-1 md:mb-4 tracking-tight transition-colors duration-500 ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{tpl.title}</h3>
-                                            <p className="text-on-surface-variant/90 text-[11px] md:text-base leading-relaxed font-light line-clamp-2">{tpl.desc}</p>
                                         </div>
 
-                                        <div className={`hidden md:block flex-grow bg-surface-container-lowest/40 rounded-lg p-4 md:p-5 mb-5 md:mb-8 italic text-on-surface/90 text-[11px] md:text-sm leading-loose border-l-2 border-${tpl.color}/50 shadow-inner relative z-10 transition-colors duration-500 ${isSelected ? 'bg-surface-container/50' : ''}`}>
-                                            <span className="text-on-surface-variant line-clamp-3 md:line-clamp-4">"...{finalSelectedSceneText.slice(0, 100)}..."</span>
+                                        <div className="mb-1.5 md:mb-3 z-10 relative">
+                                            <h4 className="text-sm md:text-lg lg:text-xl font-headline text-on-surface font-semibold truncate leading-tight group-hover:text-primary transition-colors" style={{ color: themeColor }}>
+                                                {tpl.title}
+                                            </h4>
                                         </div>
 
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setSelectedTemplateId(tpl.id); handleUseTemplate(tpl.id); }}
-                                            className={`w-full py-2.5 md:py-4 rounded-xl font-medium transition-all duration-300 active:scale-95 text-xs md:text-base relative z-10 mt-auto ${buttonStyle}`}>
-                                            {isSelected ? '确认使用' : '使用此模板'}
-                                        </button>
+                                        <p className="text-on-surface-variant text-[10px] md:text-sm mb-4 md:mb-6 line-clamp-2 leading-relaxed flex-1 z-10 relative opacity-60 group-hover:opacity-100 transition-opacity">
+                                            {tpl.desc}
+                                        </p>
+
+                                        <div className="mt-auto pt-3 md:pt-4 border-t border-white/5 z-10 relative flex flex-col gap-2">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setSelectedTemplateId(tpl.id); handleUseTemplate(tpl.id); }}
+                                                className={`w-full py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-1.5 transition-all text-xs md:text-sm font-bold shadow-lg ${isSelected ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary' : 'bg-surface-container-highest hover:brightness-125 border border-white/5 text-on-surface'}`}
+                                                style={!isSelected ? { backgroundColor: `${themeColor}20`, borderLeft: `2px solid ${themeColor}` } : {}}
+                                            >
+                                                <span className="material-symbols-outlined text-[14px] md:text-[18px]">bolt</span>
+                                                {isSelected ? '确认使用' : '使用此模板'}
+                                            </button>
+                                        </div>
+
+                                        <div className="absolute -bottom-16 -right-16 w-32 h-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-all duration-1000" style={{ backgroundColor: themeColor }}></div>
                                     </div>
                                 )
                             })}
@@ -355,7 +400,7 @@ export default function Home() {
             </div>
 
             {/* Fixed Floating Action Bar (Screens 1 & 2) */}
-            <div className={`fixed bottom-[90px] md:bottom-[100px] left-0 w-full z-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] transform ${activeScreen > 0 && activeScreen < 3 ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`fixed bottom-[110px] md:bottom-[100px] left-0 w-full z-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] transform ${activeScreen > 0 && activeScreen < 3 ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                 <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
                     <button
                         onClick={() => setActiveScreen(Math.max(0, activeScreen - 1))}
