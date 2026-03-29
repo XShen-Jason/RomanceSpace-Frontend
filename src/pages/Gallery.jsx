@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { listTemplates } from '../api/client.js';
+import { listTemplates, getTiers } from '../api/client.js';
 import { INTENT_DATA } from '../data/intents.js';
 import PosterModal from '../components/PosterModal.jsx';
 
@@ -27,14 +27,26 @@ export default function Gallery() {
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     
     const [templates, setTemplates] = useState([]);
+    const [tierConfigs, setTierConfigs] = useState({
+        free: { label: "🌟 体验", bg: "#f0e6ee", color: "var(--pink)" },
+        pro: { label: "💎 高级", bg: "linear-gradient(135deg, #f43f5e, #e11d48)", color: "#fff" },
+        "pro+": { label: "✨ 旗舰", bg: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff" },
+        partner: { label: "👑 合伙人", bg: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff" },
+        admin: { label: "🛡️ 管理员", bg: "#1e293b", color: "#fbbf24" }
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [posterTemplate, setPosterTemplate] = useState(null);
 
-    // Fetch and enrich templates
+    // Fetch templates and tier configurations
     useEffect(() => {
-        listTemplates()
-            .then((d) => {
+        Promise.all([listTemplates(), getTiers()])
+            .then(([d, tierRes]) => {
+                // L6.7 Fix: Correctly extract the 'tiers' object from the backend response structure { success: true, tiers: { ... } }
+                if (tierRes && tierRes.success && tierRes.tiers) {
+                    setTierConfigs(prev => ({ ...prev, ...tierRes.tiers }));
+                }
+
                 const apiTemplates = d.templates ?? [];
                 // Flatten intent metadata for fast lookup
                 const metaMap = {};
@@ -68,7 +80,7 @@ export default function Gallery() {
     }, [templates, activeCategory, activeOption]);
 
     return (
-        <div className="w-full min-h-screen pt-20 pb-24 px-5 md:px-12 max-w-[1600px] mx-auto flex flex-col font-body text-on-surface relative">
+        <div className="w-full min-h-screen pt-12 md:pt-20 pb-20 md:pb-24 px-3 md:px-12 max-w-[1600px] mx-auto flex flex-col font-body text-on-surface relative">
             {/* Background Base */}
             <div className="fixed inset-0 z-[-1] pointer-events-none" style={{ background: 'radial-gradient(circle at 80% 20%, #1e1a41 0%, #0d0a27 100%)' }}></div>
             
@@ -77,7 +89,7 @@ export default function Gallery() {
             <div className="fixed bottom-1/4 -left-24 w-[300px] h-[300px] bg-secondary/5 rounded-full blur-[80px] pointer-events-none z-0"></div>
 
             {/* Floating Filter Header (Sticky) */}
-            <div className="sticky top-16 md:top-20 z-30 -mx-5 md:-mx-12 px-5 md:px-12 py-3 md:py-5 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/10 mb-8 shadow-sm">
+            <div className="sticky top-16 md:top-20 z-30 -mx-3 md:-mx-12 px-3 md:px-12 py-2 md:py-5 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/10 mb-4 md:mb-8 shadow-sm">
                 <div className="max-w-[1600px] mx-auto">
                     
                     {/* --- MOBILE FILTER TRIGGER (< md) --- */}
@@ -156,29 +168,29 @@ export default function Gallery() {
 
             <main className="flex-1 min-w-0 flex flex-col relative z-10">
                 {/* Context Header (Simplified) */}
-                <header className="mb-4 relative z-10 w-full">
-                    <h1 className="text-3xl md:text-5xl font-headline font-light text-on-surface tracking-tight leading-tight">
+                <header className="mb-2 md:mb-4 relative z-10 w-full">
+                    <h1 className="text-xl md:text-5xl font-headline font-light text-on-surface tracking-tight leading-tight">
                         {activeCategory === 'all' ? '发现更多表达心意的方式' : INTENT_DATA[activeCategory].title}
                     </h1>
                 </header>
 
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-outline-variant/10">
-                    <div className="flex flex-col gap-1">
-                        <h3 className="text-xl md:text-2xl font-headline font-medium text-on-surface">
+                <div className="flex items-center justify-between mb-4 md:mb-8 pb-3 md:pb-4 border-b border-outline-variant/10">
+                    <div className="flex flex-col gap-0.5 md:gap-1">
+                        <h3 className="text-base md:text-2xl font-headline font-medium text-on-surface">
                             {activeCategory === 'all' ? '为你推荐' : INTENT_DATA[activeCategory].categoryLabel}
                         </h3>
                         {activeCategory !== 'all' && activeOption !== 'all' && (
-                            <p className="text-sm text-secondary-dim font-light tracking-wide italic">
+                            <p className="text-[10px] md:text-sm text-secondary-dim font-light tracking-wide italic">
                                 “{INTENT_DATA[activeCategory]?.options?.find(o => o.id === activeOption)?.text || FILTER_SCENES.find(o => o.id === activeOption)?.text || activeOption}”
                             </p>
                         )}
                         {activeCategory === 'all' && activeOption !== 'all' && (
-                            <p className="text-sm text-secondary-dim font-light tracking-wide italic">
+                            <p className="text-[10px] md:text-sm text-secondary-dim font-light tracking-wide italic">
                                 “{FILTER_SCENES.find(o => o.id === activeOption)?.text || activeOption}”
                             </p>
                         )}
                     </div>
-                    <span className="text-sm font-medium text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant/10">
+                    <span className="text-[10px] md:text-sm font-medium text-on-surface-variant bg-surface-container-high px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-outline-variant/10">
                         {filteredTemplates.length} 个模板
                     </span>
                 </div>
@@ -206,87 +218,134 @@ export default function Gallery() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8 content-start mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-6 lg:gap-8 content-start mb-12">
                         {filteredTemplates.map((template, idx) => {
                             const isRecommended = idx < 2 && activeCategory !== 'all' && activeOption === 'all';
                             const isPro = template.tier === 'pro';
+                            
+                            // Map template category to a theme color
+                            const getThemeColor = (name) => {
+                                const lower = name.toLowerCase();
+                                if (lower.includes('love') || lower.includes('confession') || lower.includes('anniversary')) return 'var(--theme-love)';
+                                if (lower.includes('joy') || lower.includes('game') || lower.includes('moment')) return 'var(--theme-joy)';
+                                if (lower.includes('guilt') || lower.includes('repair')) return 'var(--theme-guilt)';
+                                if (lower.includes('sadness') || lower.includes('tree_hole')) return 'var(--theme-sadness)';
+                                if (lower.includes('stress') || lower.includes('care')) return 'var(--theme-stress)';
+                                if (lower.includes('calm') || lower.includes('city')) return 'var(--theme-calm)';
+                                return 'var(--theme-neutral)';
+                            };
+
+                            const themeColor = getThemeColor(template.name);
+                            
+                            const tierKey = template.tier?.toLowerCase() || 'free';
+                            const tier = tierConfigs[tierKey] || tierConfigs.free;
 
                             return (
                                 <div 
                                     key={template.name}
-                                    className="glass-card group p-5 xl:p-8 rounded-2xl transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:border-primary/30 flex flex-col h-full relative overflow-hidden bg-surface-container-low border border-outline-variant/10 active:scale-[0.98]"
+                                    className="glass-card--premium shimmer-sweep group p-3.5 md:p-5 xl:p-8 rounded-xl md:rounded-2xl flex flex-col h-full relative overflow-hidden active:scale-[0.98] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)] hover:-translate-y-2"
+                                    style={{ '--accent-glow': `${themeColor}20` }}
                                 >
-                                    {isRecommended && (
-                                        <div className="absolute top-0 right-0 px-4 py-1.5 bg-gradient-to-r from-primary to-primary-container text-on-primary text-[10px] font-bold tracking-widest uppercase rounded-bl-xl shadow-md z-10">
-                                            核心推荐
+                                    {/* Ambient Visual Header with Preview Overlay */}
+                                    <div 
+                                        className="ambient-header h-20 md:h-28 -mx-3.5 -mt-3.5 md:-mx-5 md:-mt-5 xl:-mx-8 xl:-mt-8 mb-3 md:mb-5 relative group/header cursor-pointer"
+                                        style={{ background: `linear-gradient(135deg, ${themeColor}15 0%, #0d0a27 100%)` }}
+                                        onClick={() => window.open(`/preview/${template.name}`, '_blank')}
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface/40"></div>
+                                        
+                                        {/* Procedural Mesh with Theme Color */}
+                                        <div 
+                                            className="absolute inset-0 opacity-30" 
+                                            style={{ 
+                                                background: `radial-gradient(circle at 30% 30%, ${themeColor} 0%, transparent 60%)`,
+                                                filter: 'blur(30px)'
+                                            }}
+                                        ></div>
+
+                                        {/* Status Badge (KV-defined styling) */}
+                                        <div 
+                                            className="premium-badge transition-transform group-hover:scale-110"
+                                            style={{ background: tier.bg, color: tier.color, border: 'none' }}
+                                        >
+                                            <span className="text-[10px] md:text-[11px] font-bold tracking-tight whitespace-nowrap">
+                                                {tier.label}
+                                            </span>
                                         </div>
-                                    )}
-                                    <div className="flex items-start justify-between mb-3 z-10 relative">
-                                        <h4 className="text-xl lg:text-2xl font-headline text-on-surface font-medium pr-4">{template.title || template.name}</h4>
-                                        <div className="flex shrink-0 items-center">
-                                            {isPro ? (
-                                                <span className="bg-secondary/10 text-secondary-dim text-[11px] px-2.5 py-1 rounded-md font-bold tracking-wider uppercase border border-secondary/20">PRO</span>
-                                            ) : (
-                                                <span className="bg-emerald-500/10 text-emerald-400 text-[11px] px-2.5 py-1 rounded-md font-bold tracking-wider uppercase border border-emerald-500/20">FREE</span>
-                                            )}
+
+                                        {isRecommended && (
+                                            <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold tracking-widest uppercase rounded border border-white/10 z-10">
+                                                推荐
+                                            </div>
+                                        )}
+
+                                        {/* Quick Preview Overlay (Visible on mobile by default) */}
+                                        <div className="preview-overlay-btn">
+                                            <span className="material-symbols-outlined">visibility</span>
+                                            快速预览
+                                        </div>
+
+                                        {/* Theme Symbol */}
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+                                            <span className="material-symbols-outlined text-5xl md:text-6xl text-white">
+                                                {(template.name.includes('love') || template.name.includes('heart')) ? 'favorite' : 
+                                                 template.name.includes('star') ? 'star' : 
+                                                 template.name.includes('city') ? 'map' : 'auto_awesome'}
+                                            </span>
                                         </div>
                                     </div>
-                                    <p className="text-on-surface-variant text-sm lg:text-base mb-6 line-clamp-2 leading-relaxed flex-1 z-10 relative">
-                                        {template.desc || '精美的响应式网页模板，为你的表达增添专属色彩。'}
+
+                                    {/* Header Info - Now perfectly clean */}
+                                    <div className="mb-1.5 md:mb-3 z-10 relative">
+                                        <h4 className="text-sm md:text-lg lg:text-xl font-headline text-on-surface font-semibold truncate leading-tight group-hover:text-primary transition-colors" style={{ color: themeColor }}>
+                                            {template.title || template.name}
+                                        </h4>
+                                    </div>
+
+                                    <p className="text-on-surface-variant text-[10px] md:text-sm mb-4 md:mb-6 line-clamp-2 leading-relaxed flex-1 z-10 relative opacity-60 group-hover:opacity-100 transition-opacity">
+                                        {template.desc || '精美的响应式网页模板，为您的心意增添专属色彩。'}
                                     </p>
                                     
-                                    {!template.static && (
-                                        <div className="bg-surface-container-lowest/40 p-4 xl:p-5 rounded-xl mb-6 border border-outline-variant/5 shadow-inner z-10 relative group-hover:bg-surface-container-highest/60 transition-colors">
-                                            <p className="text-xs lg:text-sm text-on-surface/70 italic font-light line-clamp-2">
-                                                “包含 {(template.fields || []).length} 个专属配置项，一键生成浪漫宇宙...”
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="mt-auto pt-5 flex flex-wrap gap-4 items-center justify-between border-t border-outline-variant/10 z-10 relative">
-                                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                                            <button 
-                                                onClick={() => navigate(`/builder/${template.name}`, { state: { ...location.state, from: 'gallery' } })}
-                                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary-fixed transition-colors text-sm font-semibold group-hover:text-white"
-                                            >
-                                                制作同款
-                                            </button>
-                                            <a 
-                                                href={`/preview/${template.name}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 rounded-xl border border-outline-variant/20 hover:bg-surface-variant text-on-surface-variant transition-colors text-sm font-medium"
-                                                title="新标签页预览"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                            </a>
+                                    {/* Footer Actions */}
+                                    <div className="mt-auto pt-3 md:pt-4 border-t border-white/5 z-10 relative flex items-center justify-between gap-3">
+                                        <button 
+                                            onClick={() => navigate(`/builder/${template.name}`, { state: { ...location.state, from: 'gallery' } })}
+                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 md:py-2 rounded-lg bg-surface-container-highest hover:brightness-125 transition-all text-xs md:text-sm font-bold active:scale-95 border border-white/5 shadow-lg"
+                                            style={{ backgroundColor: `${themeColor}20`, borderLeft: `2px solid ${themeColor}` }}
+                                        >
+                                            <span className="material-symbols-outlined text-[14px] md:text-[16px]">bolt</span>
+                                            制作同款
+                                        </button>
+                                        
+                                        <div className="flex items-center gap-1.5">
                                             <button
                                                 onClick={() => {
                                                     const url = `https://www.moodspace.xyz/preview/${template.name}`;
                                                     const title = template.title || template.name;
                                                     setPosterTemplate({ url, title, rawHtml: '' });
-                                                    
-                                                    // Fetch raw HTML of the template for the poster preview
                                                     fetch(`https://www.moodspace.xyz/assets/${template.name}/index.html`)
                                                         .then(res => res.text())
                                                         .then(html => setPosterTemplate(prev => prev && prev.url === url ? { ...prev, rawHtml: html } : prev))
                                                         .catch(err => console.error('Failed to fetch template HTML', err));
                                                 }}
-                                                className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 rounded-xl border border-outline-variant/20 hover:bg-surface-variant text-on-surface-variant transition-colors text-sm font-medium"
+                                                className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-on-surface-variant transition-colors"
                                                 title="分享海报"
                                             >
-                                                <span className="material-symbols-outlined text-sm">image</span>
+                                                <span className="material-symbols-outlined text-[16px] md:text-[18px]">image</span>
                                             </button>
-                                        </div>
-                                        <div className="flex gap-2">
                                         </div>
                                     </div>
                                     
-                                    {/* Card Hover Glow */}
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/20 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                                    {/* Theme Ambient Glow */}
+                                    <div 
+                                        className="absolute -bottom-16 -right-16 w-32 h-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-all duration-1000"
+                                        style={{ backgroundColor: themeColor }}
+                                    ></div>
                                 </div>
                             );
                         })}
+
+
                     </div>
             </main>
 

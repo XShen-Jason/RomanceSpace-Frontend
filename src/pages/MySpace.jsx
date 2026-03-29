@@ -216,16 +216,16 @@ export default function MySpace() {
                 <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(224, 142, 254, 0.08) 0%, transparent 40%), radial-gradient(circle at 10% 80%, rgba(144, 148, 250, 0.1) 0%, transparent 50%)' }} />
             </div>
 
-            <main className="pt-24 lg:pt-32 pb-24 px-5 md:px-12 max-w-[1600px] mx-auto min-h-screen flex flex-col">
+            <main className="pt-20 md:pt-24 lg:pt-32 pb-24 px-3 md:px-12 max-w-[1600px] mx-auto min-h-screen flex flex-col">
                 <div className="flex flex-col lg:flex-row gap-8 flex-1">
                     
-                    <aside className="lg:w-[350px] flex-shrink-0 space-y-4">
-                        <div className="glass-card rounded-2xl p-6 lg:p-8 flex flex-col items-center text-center relative overflow-hidden bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
+                    <aside className="lg:w-[320px] xl:w-[350px] flex-shrink-0 space-y-3 md:space-y-4">
+                        <div className="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 flex flex-col items-center text-center relative overflow-hidden bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
                             
-                            <div className="relative mb-6">
-                                <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-secondary to-tertiary">
-                                    <div className="w-full h-full rounded-full overflow-hidden border-4 border-surface bg-surface flex items-center justify-center text-4xl text-on-surface font-headline font-bold">
+                            <div className="relative mb-3 md:mb-6">
+                                <div className="w-16 h-16 md:w-28 md:h-28 rounded-full p-0.5 md:p-1 bg-gradient-to-tr from-primary via-secondary to-tertiary">
+                                    <div className="w-full h-full rounded-full overflow-hidden border-2 md:border-4 border-surface bg-surface flex items-center justify-center text-xl md:text-4xl text-on-surface font-headline font-bold">
                                         {profile?.display_name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
                                     </div>
                                 </div>
@@ -248,76 +248,70 @@ export default function MySpace() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 mb-2 group/nickname cursor-pointer" onClick={() => {
+                                <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2 group/nickname cursor-pointer" onClick={() => {
                                     setNewNickname(profile?.display_name || '');
                                     setIsEditingNickname(true);
                                 }}>
-                                    <h1 className="text-2xl lg:text-3xl font-headline font-semibold tracking-tight text-on-surface">{profile?.display_name || '探索者'}</h1>
-                                    <span className="material-symbols-outlined text-sm text-on-surface-variant opacity-0 group-hover/nickname:opacity-100 transition-opacity" title="修改昵称">edit</span>
+                                    <h1 className="text-lg md:text-2xl lg:text-3xl font-headline font-semibold tracking-tight text-on-surface">{profile?.display_name || '探索者'}</h1>
+                                    <span className="material-symbols-outlined text-xs md:text-sm text-on-surface-variant opacity-40 md:opacity-0 group-hover/nickname:opacity-100 transition-opacity" title="修改昵称">edit</span>
                                 </div>
                             )}
                             
-                            <div className="px-4 py-1.5 bg-primary/20 text-primary-dim rounded-full text-xs font-bold border border-primary/30 uppercase tracking-widest mb-4">
+                            <div className="px-3 py-1 bg-primary/20 text-primary-dim rounded-full text-[10px] md:text-xs font-bold border border-primary/30 uppercase tracking-widest mb-3 md:mb-4">
                                 {status.label || profile?.tier?.toUpperCase() || 'FREE'}
                             </div>
 
-                            <p className="text-on-surface-variant font-medium text-sm lg:text-base mb-6">
+                            <p className="text-on-surface-variant font-medium text-xs md:text-sm lg:text-base mb-4 md:mb-6 opacity-70">
                                 {user.email}
                             </p>
                             
-                            <button className="w-full py-4 bg-surface-container-high hover:bg-error/10 text-on-surface-variant hover:text-error rounded-2xl transition-all border border-outline-variant/20 flex items-center justify-center gap-3 group/logout cursor-pointer shadow-sm hover:shadow-md" onClick={handleSignOut}>
-                                <span className="material-symbols-outlined text-2xl group-hover/logout:rotate-12 transition-transform">logout</span>
-                                <span className="font-bold tracking-widest uppercase text-sm">退出网站登录</span>
+                            <button className="w-full py-2.5 md:py-4 bg-surface-container-high hover:bg-error/10 text-on-surface-variant hover:text-error rounded-xl md:rounded-2xl transition-all border border-outline-variant/20 flex items-center justify-center gap-2 md:gap-3 group/logout cursor-pointer shadow-sm hover:shadow-md" onClick={handleSignOut}>
+                                <span className="material-symbols-outlined text-xl md:text-2xl group-hover/logout:rotate-12 transition-transform">logout</span>
+                                <span className="font-bold tracking-widest uppercase text-[10px] md:text-sm">退出网站登录</span>
                             </button>
                         </div>
 
-                        <div className="glass-card rounded-lg p-6 bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
-                            <h3 className="text-base font-headline font-bold mb-6 flex items-center gap-2 text-on-surface">
-                                <span className="material-symbols-outlined text-primary text-lg">analytics</span>
+                        <div className="glass-card rounded-xl p-4 md:p-6 bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
+                            <h3 className="text-sm md:text-base font-headline font-bold mb-4 md:mb-6 flex items-center gap-2 text-on-surface">
+                                <span className="material-symbols-outlined text-primary text-base md:text-lg">analytics</span>
                                 额度统计
                             </h3>
-                            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-6 w-full">
-                                <div className="flex items-center gap-4">
-                                    <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
-                                        <svg className="w-full h-full -rotate-90">
+                            <div className="flex flex-col gap-4 w-full">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <div className="relative w-12 h-12 md:w-16 md:h-16 flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
                                             <circle cx="32" cy="32" fill="transparent" r="28" stroke="#1e1a41" strokeWidth="5"></circle>
                                             <circle cx="32" cy="32" fill="transparent" r="28" stroke="url(#primaryGradient)" strokeDasharray="175.93" strokeDashoffset={175.93 - (175.93 * Math.min(1, status.count / status.maxDomains))} strokeLinecap="round" strokeWidth="5"></circle>
-                                            <defs>
-                                                <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                    <stop offset="0%" stopColor="#e08efe"></stop>
-                                                    <stop offset="100%" stopColor="#d180ef"></stop>
-                                                </linearGradient>
-                                            </defs>
                                         </svg>
-                                        <span className="absolute text-sm font-headline font-bold text-on-surface flex items-baseline leading-none">
-                                            <span>{status.count}</span><span className="text-[10px] text-on-surface-variant font-medium ml-0.5">/{status.maxDomains}</span>
+                                        <span className="absolute text-[10px] md:text-sm font-headline font-bold text-on-surface flex items-baseline leading-none">
+                                            <span>{status.count}</span><span className="text-[8px] md:text-[10px] text-on-surface-variant font-medium ml-0.5">/{status.maxDomains}</span>
                                         </span>
                                     </div>
                                     <div className="flex flex-col justify-center">
-                                        <p className="text-sm text-on-surface font-medium leading-none mb-1.5">已创建空间</p>
-                                        {status.inviteBonus > 0 && <p className="text-primary-dim text-xs font-medium leading-none">邀请奖励 +{status.inviteBonus}</p>}
+                                        <p className="text-xs md:text-sm text-on-surface font-medium leading-none mb-1 md:mb-1.5">已创建空间</p>
+                                        {status.inviteBonus > 0 && <p className="text-primary-dim text-[10px] md:text-xs font-medium leading-none">邀请奖励 +{status.inviteBonus}</p>}
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
-                                        <svg className="w-full h-full -rotate-90">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <div className="relative w-12 h-12 md:w-16 md:h-16 flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
                                             <circle cx="32" cy="32" fill="transparent" r="28" stroke="#1e1a41" strokeWidth="5"></circle>
                                             <circle cx="32" cy="32" fill="transparent" r="28" stroke="#9094fa" strokeDasharray="175.93" strokeDashoffset={175.93 - (175.93 * Math.min(1, status.dailyUsedEdits / status.maxDailyEdits))} strokeLinecap="round" strokeWidth="5"></circle>
                                         </svg>
-                                        <span className="absolute text-sm font-headline font-bold text-on-surface flex items-center justify-center leading-none">
+                                        <span className="absolute text-[10px] md:text-sm font-headline font-bold text-on-surface flex items-center justify-center leading-none">
                                             <span>{Math.round((status.dailyUsedEdits / status.maxDailyEdits) * 100)}%</span>
                                         </span>
                                     </div>
                                     <div className="flex flex-col justify-center">
-                                        <p className="text-sm text-on-surface font-medium leading-none mb-1.5">今日交互消耗</p>
-                                        <p className="text-secondary text-xs font-medium leading-none">剩余 {Math.max(0, status.maxDailyEdits - status.dailyUsedEdits)} 次修改</p>
+                                        <p className="text-xs md:text-sm text-on-surface font-medium leading-none mb-1 md:mb-1.5">今日交互消耗</p>
+                                        <p className="text-secondary text-[10px] md:text-xs font-medium leading-none">剩余 {Math.max(0, status.maxDailyEdits - status.dailyUsedEdits)} 次修改</p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div className="mt-6 pt-4 border-t border-outline-variant/10">
-                                <div className="flex items-center justify-between text-xs mb-3">
+                            <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-outline-variant/10">
+                                <div className="flex items-center justify-between text-[10px] md:text-xs mb-2 md:mb-3">
                                     <span className="text-on-surface-variant">会员有效期</span>
                                     <span className="text-on-surface font-bold">
                                         {profile?.subscription_expires_at 
@@ -328,36 +322,36 @@ export default function MySpace() {
                                     </span>
                                 </div>
                                 <Link to="/upgrade" className="block w-full">
-                                    <button className="w-full py-2.5 bg-primary/10 hover:bg-primary/20 text-primary-dim text-sm font-bold rounded-xl transition-all border border-primary/20 cursor-pointer">
+                                    <button className="w-full py-2 md:py-2.5 bg-primary/10 hover:bg-primary/20 text-primary-dim text-xs md:text-sm font-bold rounded-lg md:rounded-xl transition-all border border-primary/20 cursor-pointer">
                                         {profile?.tier === 'free' || !profile?.tier ? '🚀 开启升级之旅' : '💎 立即续订特权'}
                                     </button>
                                 </Link>
                             </div>
                         </div>
 
-                        <div className="glass-card rounded-lg p-6 bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
-                            <h3 className="text-base font-headline font-bold mb-4 text-on-surface">专属邀请码</h3>
+                        <div className="glass-card rounded-xl p-4 md:p-6 bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10">
+                            <h3 className="text-sm md:text-base font-headline font-bold mb-3 md:mb-4 text-on-surface">专属邀请码</h3>
                             {inviteCode ? (
                                 <div className="space-y-4">
                                     <div>
-                                        <div className="bg-black/20 p-3 rounded-xl border border-outline-variant/10 flex items-center justify-between">
-                                            <span className="font-headline font-bold text-secondary-fixed tracking-widest text-lg">{inviteCode}</span>
+                                        <div className="bg-black/20 p-2 md:p-3 rounded-lg md:rounded-xl border border-outline-variant/10 flex items-center justify-between">
+                                            <span className="font-headline font-bold text-secondary-fixed tracking-widest text-base md:text-lg">{inviteCode}</span>
                                             <button 
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(inviteUrl);
                                                     toast.success('邀请链接已复制');
                                                 }}
-                                                className="text-xs bg-secondary-container px-3 py-1.5 rounded text-on-secondary-container font-bold hover:brightness-110 active:scale-95 transition-all cursor-pointer">复制链接</button>
+                                                className="text-[10px] md:text-xs bg-secondary-container px-2 py-1 md:px-3 md:py-1.5 rounded text-on-secondary-container font-bold hover:brightness-110 active:scale-95 transition-all cursor-pointer">复制链接</button>
                                         </div>
                                     </div>
-                                    <div className="flex flex-row gap-3">
-                                        <div className="flex-1 p-3 bg-surface-container-high/40 rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
-                                            <p className="text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">成功邀请</p>
-                                            <p className="text-xl font-headline font-bold text-on-surface leading-none mt-1">{inviteCount} <span className="text-[10px] font-normal">位</span></p>
+                                    <div className="flex flex-row gap-2 md:gap-3">
+                                        <div className="flex-1 p-2 md:p-3 bg-surface-container-high/40 rounded-lg md:rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
+                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">成功邀请</p>
+                                            <p className="text-base md:text-xl font-headline font-bold text-on-surface leading-none mt-1">{inviteCount} <span className="text-[9px] font-normal">位</span></p>
                                         </div>
-                                        <div className="flex-1 p-3 bg-surface-container-high/40 rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
-                                            <p className="text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">奖励额度</p>
-                                            <p className="text-xl font-headline font-bold text-primary leading-none mt-1">+{inviteCount} <span className="text-[10px] font-normal">PAGES</span></p>
+                                        <div className="flex-1 p-2 md:p-3 bg-surface-container-high/40 rounded-lg md:rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
+                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">奖励额度</p>
+                                            <p className="text-base md:text-xl font-headline font-bold text-primary leading-none mt-1">+{inviteCount} <span className="text-[9px] font-normal">PAGES</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -378,8 +372,8 @@ export default function MySpace() {
                             <section>
                                 <div className="flex justify-between items-center mb-8">
                                     <div>
-                                        <h2 className="text-xl md:text-2xl font-headline font-bold tracking-tight text-on-surface">我的空间</h2>
-                                        <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">管理您的个人情感次元</p>
+                                        <h2 className="text-lg md:text-2xl font-headline font-bold tracking-tight text-on-surface">我的空间</h2>
+                                        <p className="text-[10px] md:text-sm text-on-surface-variant mt-0.5">管理您的个人情感次元</p>
                                     </div>
                                     <div className="flex bg-surface-container-high/60 p-1 rounded-lg border border-outline-variant/10">
                                         <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded shadow-sm cursor-pointer transition-colors ${viewMode === 'grid' ? 'bg-surface-bright text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}><span className="material-symbols-outlined text-base">grid_view</span></button>
@@ -403,7 +397,7 @@ export default function MySpace() {
                                     </div>
                                 )}
 
-                                <div className={`grid gap-6 relative ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1'}`}>
+                                <div className={`grid gap-3 md:gap-6 relative ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' : 'grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1'}`}>
                                     {projects.map((p, index) => {
                                         const isLocked = projects.length > status.maxDomains && index !== 0;
                                         const url = `https://${p.subdomain}.${BASE_DOMAIN}`;
@@ -442,30 +436,30 @@ export default function MySpace() {
                                         }
 
                                         return (
-                                            <div key={p.subdomain} className={`glass-card bg-surface-container-low/40 rounded-2xl overflow-hidden group ${borderColorClass} transition-all flex border border-outline-variant/10 shadow-lg shadow-black/20 ${viewMode === 'grid' ? 'flex-col min-h-[250px] lg:h-[280px]' : 'flex-row min-h-[112px] lg:h-32 items-stretch'} active:scale-[0.98]`}>
-                                                <div className={`relative bg-surface-container-highest overflow-hidden shrink-0 ${viewMode === 'grid' ? 'h-24 lg:h-32 w-full' : 'w-24 lg:w-40 h-full'}`}>
+                                            <div key={p.subdomain} className={`glass-card bg-surface-container-low/40 rounded-xl md:rounded-2xl overflow-hidden group ${borderColorClass} transition-all flex border border-outline-variant/10 shadow-lg shadow-black/20 ${viewMode === 'grid' ? 'flex-col min-h-[180px] md:min-h-[250px] lg:h-[280px]' : 'flex-row min-h-[112px] lg:h-32 items-stretch'} active:scale-[0.98]`}>
+                                                <div className={`relative bg-surface-container-highest overflow-hidden shrink-0 ${viewMode === 'grid' ? 'h-16 md:h-32 w-full' : 'w-24 lg:w-40 h-full'}`}>
                                                     <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} group-hover:scale-110 transition-transform duration-700`}></div>
                                                     <div className="absolute inset-0 flex items-center justify-center shadow-sm">
-                                                        <span className={`material-symbols-outlined ${textClass} text-4xl bg-black/30 backdrop-blur-md p-3 rounded-2xl border border-white/10`}>{iconStr}</span>
+                                                        <span className={`material-symbols-outlined ${textClass} text-2xl md:text-4xl bg-black/30 backdrop-blur-md p-2 md:p-3 rounded-xl md:rounded-2xl border border-white/10`}>{iconStr}</span>
                                                     </div>
-                                                    <div className="absolute top-3 right-3 px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded border border-green-500/20 uppercase font-bold tracking-tighter backdrop-blur-md">Live</div>
+                                                    <div className="absolute top-2 right-2 md:top-3 md:right-3 px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] md:text-[10px] rounded border border-green-500/20 uppercase font-bold tracking-tighter backdrop-blur-md">Live</div>
                                                 </div>
-                                                <div className={`p-4 lg:p-5 flex flex-col flex-1 justify-between ${viewMode === 'list' && 'py-3'}`}>
+                                                <div className={`p-3 md:p-5 flex flex-col flex-1 justify-between ${viewMode === 'list' && 'py-2 md:py-3'}`}>
                                                     <div className="overflow-hidden">
                                                         {editingSubdomain === p.subdomain ? (
-                                                            <div className="flex items-center gap-2 w-full">
+                                                            <div className="flex items-center gap-1.5 md:gap-2 w-full">
                                                                 <input 
                                                                     autoFocus
                                                                     value={tempTitle}
                                                                     onChange={(e) => setTempTitle(e.target.value)}
                                                                     onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle(p.subdomain, p.data)}
-                                                                    className="bg-surface-variant/20 border-b border-primary text-sm lg:text-base font-semibold py-0.5 px-2 flex-1 focus:outline-none text-on-surface rounded-t"
+                                                                    className="bg-surface-variant/20 border-b border-primary text-xs md:text-base font-semibold py-0.5 px-1 md:px-2 flex-1 focus:outline-none text-on-surface rounded-t"
                                                                 />
-                                                                <button title="确认" className="text-primary hover:text-primary-dim cursor-pointer p-1" onClick={() => handleUpdateTitle(p.subdomain, p.data)}>
-                                                                    <span className="material-symbols-outlined text-lg">check</span>
+                                                                <button title="确认" className="text-primary hover:text-primary-dim cursor-pointer p-0.5" onClick={() => handleUpdateTitle(p.subdomain, p.data)}>
+                                                                    <span className="material-symbols-outlined text-base">check</span>
                                                                 </button>
-                                                                <button title="取消" className="text-on-surface-variant hover:text-on-surface cursor-pointer p-1" onClick={() => setEditingSubdomain(null)}>
-                                                                    <span className="material-symbols-outlined text-lg">close</span>
+                                                                <button title="取消" className="text-on-surface-variant hover:text-on-surface cursor-pointer p-0.5" onClick={() => setEditingSubdomain(null)}>
+                                                                    <span className="material-symbols-outlined text-base">close</span>
                                                                 </button>
                                                             </div>
                                                         ) : (
@@ -474,36 +468,36 @@ export default function MySpace() {
                                                                     setEditingSubdomain(p.subdomain);
                                                                     setTempTitle(p.data?.title || '未命名网页');
                                                                 }}
-                                                                className="text-lg lg:text-xl font-headline font-semibold mb-0.5 text-on-surface truncate flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+                                                                className="text-sm md:text-xl font-headline font-semibold mb-0.5 text-on-surface truncate flex items-center gap-1.5 md:gap-2 cursor-pointer hover:text-primary transition-colors"
                                                             >
                                                                 {p.data?.title || '未命名网页'}
-                                                                <span className="material-symbols-outlined text-sm opacity-0 group-hover:opacity-40 transition-opacity">edit</span>
+                                                                <span className="material-symbols-outlined text-xs md:text-sm opacity-0 group-hover:opacity-40 transition-opacity">edit</span>
                                                             </h4>
                                                         )}
-                                                        <div className="flex items-center gap-2 mb-1.5">
-                                                            <span className="px-1.5 py-0.5 rounded bg-surface-variant text-[10px] text-on-surface-variant border border-outline-variant/20">
+                                                        <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-1.5">
+                                                            <span className="px-1 py-0.5 rounded bg-surface-variant text-[8px] md:text-[10px] text-on-surface-variant border border-outline-variant/20">
                                                                 {templateRegistry[p.template_type] || TEMPLATE_NAMES[p.template_type] || p.template_type}
                                                             </span>
-                                                            <p className="text-[10px] lg:text-xs text-on-surface-variant truncate tracking-wide opacity-60 font-mono">
+                                                            <p className="text-[8px] md:text-xs text-on-surface-variant truncate tracking-wide opacity-60 font-mono">
                                                                 {p.subdomain}.{BASE_DOMAIN}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className={`flex items-center justify-between border-t border-outline-variant/10 shrink-0 ${viewMode === 'grid' ? 'mt-3 pt-3' : 'mt-2 pt-2'}`}>
-                                                        <div className="flex gap-1.5 md:gap-2 flex-wrap">
-                                                            <a href={url} target="_blank" rel="noopener noreferrer" className={`w-9 h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5`} title="在新标签页中访问">
-                                                                <span className="material-symbols-outlined text-lg">visibility</span>
+                                                    <div className={`flex items-center justify-between border-t border-outline-variant/10 shrink-0 ${viewMode === 'grid' ? 'mt-1.5 pt-1.5 md:mt-3 md:pt-3' : 'mt-1 pt-1 md:mt-2 md:pt-2'}`}>
+                                                        <div className="flex gap-1 md:gap-2 flex-wrap">
+                                                            <a href={url} target="_blank" rel="noopener noreferrer" className={`w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5`} title="在新标签页中访问">
+                                                                <span className="material-symbols-outlined text-base md:text-lg">visibility</span>
                                                             </a>
-                                                            <Link to={`/builder/${p.template_type}?edit=${p.subdomain}`} state={{ from: 'myspace' }} className={`w-9 h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5`} title="重新编辑">
-                                                                <span className="material-symbols-outlined text-lg">draw</span>
+                                                            <Link to={`/builder/${p.template_type}?edit=${p.subdomain}`} state={{ from: 'myspace' }} className={`w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5`} title="重新编辑">
+                                                                <span className="material-symbols-outlined text-base md:text-lg">draw</span>
                                                             </Link>
                                                             <button 
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(url);
                                                                     toast.success('已复制专属网址！');
                                                                 }}
-                                                                className={`w-9 h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5 cursor-pointer`} title="复制链接">
-                                                                <span className="material-symbols-outlined text-lg">share</span>
+                                                                className={`w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 ${hoverBgTextClass} text-on-surface-variant transition-colors border border-outline-variant/5 cursor-pointer`} title="复制链接">
+                                                                <span className="material-symbols-outlined text-base md:text-lg">share</span>
                                                             </button>
                                                             <button
                                                                 onClick={() => {
@@ -518,11 +512,11 @@ export default function MySpace() {
                                                                         .then(html => setPosterProject(prev => prev && prev.url === url ? { ...prev, rawHtml: html } : prev))
                                                                         .catch(err => console.error('Failed to fetch base template HTML for poster preview', err));
                                                                 }}
-                                                                className="w-9 h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 hover:bg-primary/20 hover:text-primary text-on-surface-variant transition-colors border border-outline-variant/5 cursor-pointer" title="分享海报">
-                                                                <span className="material-symbols-outlined text-lg">image</span>
+                                                                className="w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-surface-container-high/60 hover:bg-primary/20 hover:text-primary text-on-surface-variant transition-colors border border-outline-variant/5 cursor-pointer" title="分享海报">
+                                                                <span className="material-symbols-outlined text-base md:text-lg">image</span>
                                                             </button>
                                                         </div>
-                                                        <div className="text-[10px] text-on-surface-variant/70 font-medium hidden sm:block">
+                                                        <div className="text-[8px] md:text-[10px] text-on-surface-variant/70 font-medium hidden sm:block">
                                                             {new Date(p.updated_at || p.created_at).toLocaleDateString('zh-CN')}
                                                         </div>
                                                     </div>

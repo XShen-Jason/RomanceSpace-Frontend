@@ -59,7 +59,7 @@ html {
 
 @media (max-width: 768px) {
     .container {
-        padding: 0 1.5rem; /* Increased to prevent edge sticking */
+        padding: 0 0.75rem; /* Reduced to provide more horizontal space on mobile */
     }
     .page {
         padding-top: 1.25rem;
@@ -114,8 +114,8 @@ html {
         flex-direction: row; /* Horizontal on mobile too */
         gap: 0;
         padding-bottom: 0;
-        padding-left: 1.5rem; /* Match container */
-        padding-right: 1.5rem; /* Match container */
+        padding-left: 0.75rem; /* Match container */
+        padding-right: 0.75rem; /* Match container */
     }
     .navbar__brand {
         font-size: 1.1rem;
@@ -992,4 +992,153 @@ html.slide-up-nav::view-transition-new(root) {
 
 .builder-slide-up-fallback {
   animation: slideInUp 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* ── Premium Gallery Redesign ────────────────────────────────────────────── */
+.glass-card--premium {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.3),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ambient-header {
+    background: linear-gradient(135deg, #1e1a41 0%, #0d0a27 100%);
+    position: relative;
+    overflow: hidden;
+    height: 60px;
+}
+
+.ambient-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(224, 142, 254, 0.1) 0%,
+        rgba(144, 148, 250, 0.08) 25%,
+        transparent 50%
+    );
+    animation: rotate-mesh 20s linear infinite;
+}
+
+@keyframes rotate-mesh {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.shimmer-sweep {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-sweep::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0) 55%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(-45deg);
+    transition: all 0.7s;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+}
+
+.group:hover .shimmer-sweep::after {
+    animation: shimmer 2.1s infinite;
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% { transform: translate(-30%, -30%) rotate(-45deg); }
+    100% { transform: translate(30%, 30%) rotate(-45deg); }
+}
+
+.premium-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    z-index: 10;
+}
+
+/* ── Emotion Themes ───────────────────────────────────────────────────────── */
+:root {
+    --theme-joy: #fbbf24;
+    --theme-love: #fb7185;
+    --theme-guilt: #10b981;
+    --theme-sadness: #6366f1;
+    --theme-stress: #38bdf8;
+    --theme-calm: #14b8a6;
+    --theme-neutral: #94a3b8;
+}
+
+.preview-overlay-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+@media (hover: hover) {
+    .preview-overlay-btn {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    .group:hover .preview-overlay-btn {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* For touch devices or mobile browsers that don't support hover */
+@media (hover: none) {
+    .preview-overlay-btn {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.preview-overlay-btn span {
+    font-size: 14px;
 }

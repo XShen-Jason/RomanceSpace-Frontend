@@ -161,34 +161,34 @@ export default function Home() {
                 style={{ transform: `translateY(-${activeScreen * 100}dvh)` }}
             >
                 {/* ─── SCREEN 0: Hero Intent Selection ─── */}
-                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[72px] md:pt-[80px] pb-[120px] md:pb-[24px] relative overflow-y-auto md:overflow-hidden custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[60px] md:pt-[80px] pb-[90px] md:pb-[24px] relative overflow-y-auto md:overflow-hidden custom-scrollbar">
                     <div className="absolute top-1/4 -left-20 w-[800px] h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(224,142,254,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(144,148,250,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] pointer-events-none z-0" style={{ background: 'radial-gradient(ellipse at center, rgba(36,32,74,0.4) 0%, transparent 60%)' }}></div>
 
-                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-4">
-                        <div className="text-center max-w-4xl w-full mb-8 md:mb-10 lg:mb-12 leading-relaxed">
-                            <h1 className="font-headline text-4xl md:text-6xl lg:text-[5rem] font-light tracking-tight text-on-surface mb-4 md:mb-6 leading-tight">
+                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-2 md:py-4">
+                        <div className="text-center max-w-4xl w-full mb-4 md:mb-10 lg:mb-12 leading-relaxed">
+                            <h1 className="font-headline text-3xl md:text-6xl lg:text-[5rem] font-light tracking-tight text-on-surface mb-2 md:mb-6 leading-tight">
                                 有些情绪，值得被<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">认真安放</span>
                             </h1>
-                            <p className="font-body text-base md:text-xl text-on-surface-variant font-light tracking-wide max-w-2xl mx-auto opacity-90">
+                            <p className="font-body text-sm md:text-xl text-on-surface-variant font-light tracking-wide max-w-2xl mx-auto opacity-90">
                                 顺着心的指引，点击最契合你当下的选择
                             </p>
                         </div>
 
-                        <div className="w-full max-w-[1100px] flex flex-wrap justify-center content-center gap-3 sm:gap-4 md:gap-5 mx-auto pb-4 md:pb-0">
+                        <div className="w-full max-w-[1100px] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 mx-auto pb-4 md:pb-0">
                             {Object.entries(INTENT_DATA).map(([key, data]) => (
                                 <button
                                     key={key}
                                     onClick={() => handleIntentClick(key)}
-                                    className="glass-card w-[calc(50%-0.375rem)] sm:w-[calc(33.333%-0.666rem)] lg:w-[calc(25%-0.9375rem)] max-w-[260px] p-5 md:p-6 lg:p-7 rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center text-center group cursor-pointer transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:border-primary/50 hover:bg-surface-container-low/60 active:scale-95 bg-surface-container-low/30 backdrop-blur-xl border border-outline-variant/20 relative overflow-hidden shrink-0"
+                                    className="glass-card p-3 sm:p-5 md:p-6 lg:p-7 rounded-[1.25rem] md:rounded-[2rem] flex flex-col items-center justify-center text-center group cursor-pointer transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:border-primary/50 hover:bg-surface-container-low/60 active:scale-95 bg-surface-container-low/30 backdrop-blur-xl border border-outline-variant/20 relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-[1rem] lg:rounded-[1.25rem] bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 lg:mb-5 group-hover:bg-primary/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-inner relative z-10">
-                                        <span className="material-symbols-outlined text-xl sm:text-2xl lg:text-3xl text-primary">{data.icon}</span>
+                                    <div className="w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-[0.875rem] lg:rounded-[1.25rem] bg-primary/10 border border-primary/20 flex items-center justify-center mb-2.5 sm:mb-4 lg:mb-5 group-hover:bg-primary/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-inner relative z-10">
+                                        <span className="material-symbols-outlined text-lg sm:text-2xl lg:text-3xl text-primary">{data.icon}</span>
                                     </div>
-                                    <h3 className="font-headline text-base sm:text-lg lg:text-xl text-on-surface font-medium mb-1.5 lg:mb-2 tracking-wide group-hover:text-primary-dim transition-colors relative z-10">{data.categoryLabel}</h3>
-                                    <p className="text-[10px] sm:text-xs lg:text-sm text-on-surface-variant font-light opacity-60 group-hover:opacity-100 transition-opacity leading-relaxed relative z-10">{data.title}</p>
+                                    <h3 className="font-headline text-sm sm:text-lg lg:text-xl text-on-surface font-medium mb-0.5 sm:mb-1.5 lg:mb-2 tracking-wide group-hover:text-primary-dim transition-colors relative z-10">{data.categoryLabel}</h3>
+                                    <p className="hidden sm:block text-[10px] lg:text-sm text-on-surface-variant font-light opacity-60 group-hover:opacity-100 transition-opacity leading-relaxed relative z-10">{data.title}</p>
                                 </button>
                             ))}
                         </div>
@@ -196,46 +196,46 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 1: Scene Selection Options ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-28 pb-32 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-32 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
 
-                    <main className="flex-grow flex flex-col items-center justify-start px-5 md:px-12 max-w-5xl mx-auto w-full">
-                        <header className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
-                            <h2 className="font-headline text-2xl md:text-5xl lg:text-6xl font-light tracking-tight text-on-surface opacity-90 transition-all">
+                    <main className="flex-grow flex flex-col items-center justify-start px-4 md:px-12 max-w-5xl mx-auto w-full">
+                        <header className="text-center mb-4 md:mb-16 space-y-1.5 md:space-y-6">
+                            <h2 className="font-headline text-xl md:text-5xl lg:text-6xl font-light tracking-tight text-on-surface opacity-90 transition-all">
                                 {currentIntent.title}
                             </h2>
-                            <p className="text-base md:text-xl lg:text-2xl font-light text-on-surface-variant tracking-wide">
+                            <p className="text-sm md:text-xl lg:text-2xl font-light text-on-surface-variant tracking-wide">
                                 {currentIntent.subtitle}
                             </p>
                         </header>
 
-                        <div className="w-full max-w-2xl space-y-3 mb-24 md:mb-32">
+                        <div className="w-full max-w-2xl space-y-2 md:space-y-3 mb-24 md:mb-32">
                             {currentIntent.options.map((opt, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => { setSelectedIndex(idx); setCustomText(''); }}
-                                    className={`w-full text-left group px-5 md:px-8 py-4 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start 
+                                    className={`w-full text-left group px-4 md:px-8 py-3 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start 
                                         ${selectedIndex === idx
-                                            ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.02]'
+                                            ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.01]'
                                             : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]'
                                         }`}
                                 >
-                                    <span className={`text-base md:text-xl lg:text-2xl font-light transition-colors duration-300 ${selectedIndex === idx ? 'text-primary font-medium' : 'text-on-surface group-hover:text-primary-dim'}`}>
+                                    <span className={`text-sm md:text-xl lg:text-2xl font-light transition-colors duration-300 leading-snug ${selectedIndex === idx ? 'text-primary font-medium' : 'text-on-surface group-hover:text-primary-dim'}`}>
                                         "{opt.text}"
                                     </span>
-                                    <span className={`text-xs md:text-base font-light transition-all duration-300 overflow-hidden ${selectedIndex === idx ? 'text-primary-dim mt-2 md:mt-3 max-h-12 opacity-100' : 'text-on-surface-variant/60 max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100 group-hover:mt-2 md:group-hover:mt-3'}`}>
+                                    <span className={`text-xs md:text-base font-light transition-all duration-300 overflow-hidden hidden md:block ${selectedIndex === idx ? 'text-primary-dim mt-3 max-h-12 opacity-100' : 'text-on-surface-variant/60 max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100 group-hover:mt-3'}`}>
                                         {opt.helper}
                                     </span>
                                 </button>
                             ))}
                             <div
                                 onClick={() => setSelectedIndex(-1)}
-                                className={`w-full text-left group px-5 md:px-8 py-4 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start cursor-pointer
+                                className={`w-full text-left group px-4 md:px-8 py-3 md:py-8 rounded-xl backdrop-blur-md border transition-all duration-300 ease-out flex flex-col items-start cursor-pointer
                                     ${selectedIndex === -1
-                                        ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.02]'
+                                        ? 'bg-primary/20 border-primary/60 shadow-[0_0_20px_rgba(224,142,254,0.25)] ring-1 ring-primary/40 transform scale-[1.01]'
                                         : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]'
                                     }`}
                             >
-                                <span className={`text-sm md:text-base font-medium mb-2 md:mb-3 transition-colors ${selectedIndex === -1 ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary-dim'}`}>
+                                <span className={`text-xs md:text-base font-medium mb-2 md:mb-3 transition-colors ${selectedIndex === -1 ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary-dim'}`}>
                                     或者，自己写下此刻想说的话：
                                 </span>
                                 <textarea
@@ -246,7 +246,7 @@ export default function Home() {
                                     }}
                                     onClick={(e) => { e.stopPropagation(); setSelectedIndex(-1); }}
                                     placeholder="输入你的专属意境卡片文字..."
-                                    className="w-full bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg p-3 md:p-4 text-on-surface text-sm md:text-lg focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 resize-none h-20 md:h-24 font-light transition-all"
+                                    className="w-full bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg p-2.5 md:p-4 text-on-surface text-sm md:text-lg focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 resize-none h-16 md:h-24 font-light transition-all"
                                 />
                             </div>
                         </div>
@@ -254,7 +254,7 @@ export default function Home() {
                 </div>
 
                 {/* ─── SCREEN 2: Template Recommendations ─── */}
-                <div className="w-full h-[100dvh] shrink-0 pt-28 pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 pt-16 md:pt-28 pb-28 md:pb-48 flex flex-col relative z-20 overflow-y-auto custom-scrollbar">
                     {/* Immersive Background Glow for Screen 2 */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none z-0 overflow-hidden">
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full blur-[120px] opacity-20"
@@ -262,30 +262,30 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <main className="flex-grow flex flex-col items-center justify-start px-5 max-w-7xl mx-auto w-full relative z-10 animate-in fade-in zoom-in-95 duration-1000">
+                    <main className="flex-grow flex flex-col items-center justify-start px-4 md:px-5 max-w-7xl mx-auto w-full relative z-10 animate-in fade-in zoom-in-95 duration-1000">
 
-                        <section className="mb-12 md:mb-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                                <div className="space-y-4">
-                                    <div className="flex flex-wrap gap-3">
-                                        <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-surface-container-high text-primary border border-primary/20">
+                        <section className="mb-4 md:mb-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 md:gap-8">
+                                <div className="space-y-1.5 md:space-y-4">
+                                    <div className="flex flex-wrap gap-2 md:gap-3">
+                                        <span className="px-3 py-1 rounded-full text-[10px] md:text-xs font-medium bg-surface-container-high text-primary border border-primary/20">
                                             意境：{currentIntent.categoryLabel}
                                         </span>
-                                        <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-surface-container-high text-secondary border border-secondary/20 truncate max-w-[250px]">
-                                            场景：{finalSelectedSceneText}
+                                        <span className="px-3 py-1 rounded-full text-[10px] md:text-xs font-medium bg-surface-container-high text-secondary border border-secondary/20 truncate max-w-[200px] md:max-w-[250px]">
+                                            场景：{finalSelectedSceneText.length > 18 ? finalSelectedSceneText.slice(0,18)+'…' : finalSelectedSceneText}
                                         </span>
                                     </div>
-                                    <h1 className="text-3xl md:text-5xl font-headline font-light tracking-tight text-on-surface">
-                                        我们为你准备了几种更适合的表达方式
+                                    <h1 className="text-lg md:text-5xl font-headline font-light tracking-tight text-on-surface">
+                                        为你推荐最合适的表达方式
                                     </h1>
-                                    <p className="text-on-surface-variant max-w-2xl text-base md:text-lg leading-relaxed">
+                                    <p className="hidden md:block text-on-surface-variant max-w-2xl text-base md:text-lg leading-relaxed">
                                         结合你的情感，这些专为 "{currentIntent.categoryLabel}" 打造的风格或许能帮你更好地表达。
                                     </p>
                                 </div>
                             </div>
                         </section>
 
-                        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 w-full mb-12 md:mb-16 mt-2">
+                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8 w-full mb-6 md:mb-16 mt-1 md:mt-2">
                             {recommendedTemplates.length === 0 ? (
                                 <div className="col-span-full text-center py-10 opacity-60">
                                     暂无完全匹配的模板，不妨去模板大厅看看 🥺
@@ -295,7 +295,7 @@ export default function Home() {
                                 const isDefaultHighlighted = selectedTemplateId === null && i === 0;
 
                                 const cardStyle = isSelected
-                                    ? 'bg-primary/20 border-primary/60 shadow-[0_0_30px_rgba(224,142,254,0.3)] ring-1 ring-primary/40 transform scale-[1.02]'
+                                    ? 'bg-primary/20 border-primary/60 shadow-[0_0_30px_rgba(224,142,254,0.3)] ring-1 ring-primary/40'
                                     : (isDefaultHighlighted
                                         ? 'bg-primary/5 shadow-[0_0_15px_rgba(224,142,254,0.1)] ring-1 ring-primary/20 border-primary/30 hover:border-primary/50 hover:bg-primary/10'
                                         : 'bg-surface-container-low/80 border-outline-variant/30 hover:bg-surface-container hover:border-primary/40 hover:shadow-[0_0_20px_rgba(224,142,254,0.15)]');
@@ -308,36 +308,36 @@ export default function Home() {
                                     <div
                                         key={tpl.id}
                                         onClick={() => setSelectedTemplateId(tpl.id)}
-                                        className={`glass-card rounded-2xl p-5 md:p-8 flex flex-col h-full relative overflow-hidden group transition-all duration-500 border cursor-pointer ${cardStyle}`}
+                                        className={`glass-card rounded-2xl p-4 md:p-8 flex flex-col h-full relative overflow-hidden group transition-all duration-500 border cursor-pointer ${cardStyle}`}
                                     >
                                         {i === 0 && (
-                                            <div className="absolute top-0 right-0 p-3 md:p-4 z-10 transition-all duration-500">
-                                                <span className={`uppercase text-[10px] tracking-widest px-3 py-1 rounded-full border shadow-sm transition-all duration-500 ${isSelected ? 'bg-primary/20 text-primary font-medium border-primary/40 shadow-primary/40' : (isDefaultHighlighted ? 'bg-primary/10 text-primary-dim border-primary/20 shadow-primary/10' : 'bg-surface-variant text-on-surface-variant/50 border-outline-variant/30 opacity-70')}`}>极佳适配</span>
+                                            <div className="absolute top-0 right-0 p-2 md:p-4 z-10 transition-all duration-500">
+                                                <span className={`uppercase text-[9px] md:text-[10px] tracking-widest px-2 py-0.5 md:px-3 md:py-1 rounded-full border shadow-sm transition-all duration-500 ${isSelected ? 'bg-primary/20 text-primary font-medium border-primary/40 shadow-primary/40' : (isDefaultHighlighted ? 'bg-primary/10 text-primary-dim border-primary/20 shadow-primary/10' : 'bg-surface-variant text-on-surface-variant/50 border-outline-variant/30 opacity-70')}`}>极佳适配</span>
                                             </div>
                                         )}
-                                        <div className="mb-4 md:mb-8 relative z-10">
-                                            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-4 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/30 group-hover:scale-110 transition-transform duration-500`}>
-                                                <span className={`material-symbols-outlined text-xl md:text-2xl text-${tpl.color}`}>{tpl.icon}</span>
+                                        <div className="mb-3 md:mb-8 relative z-10">
+                                            <div className={`w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-8 bg-${tpl.color}/10 shadow-sm border border-${tpl.color}/30 group-hover:scale-110 transition-transform duration-500`}>
+                                                <span className={`material-symbols-outlined text-base md:text-2xl text-${tpl.color}`}>{tpl.icon}</span>
                                             </div>
-                                            <h3 className={`text-xl md:text-3xl font-headline font-medium md:font-light mb-2 md:mb-4 tracking-tight transition-colors duration-500 ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{tpl.title}</h3>
-                                            <p className="text-on-surface-variant/90 text-xs md:text-base leading-relaxed font-light">{tpl.desc}</p>
+                                            <h3 className={`text-base md:text-3xl font-headline font-medium md:font-light mb-1 md:mb-4 tracking-tight transition-colors duration-500 ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{tpl.title}</h3>
+                                            <p className="text-on-surface-variant/90 text-[11px] md:text-base leading-relaxed font-light line-clamp-2">{tpl.desc}</p>
                                         </div>
 
-                                        <div className={`flex-grow bg-surface-container-lowest/40 rounded-lg p-4 md:p-5 mb-5 md:mb-8 italic text-on-surface/90 text-[11px] md:text-sm leading-loose border-l-2 border-${tpl.color}/50 shadow-inner relative z-10 transition-colors duration-500 ${isSelected ? 'bg-surface-container/50' : ''}`}>
-                                            <span className="text-on-surface-variant line-clamp-3 md:line-clamp-4">“...{finalSelectedSceneText.slice(0, 100)}...”</span>
+                                        <div className={`hidden md:block flex-grow bg-surface-container-lowest/40 rounded-lg p-4 md:p-5 mb-5 md:mb-8 italic text-on-surface/90 text-[11px] md:text-sm leading-loose border-l-2 border-${tpl.color}/50 shadow-inner relative z-10 transition-colors duration-500 ${isSelected ? 'bg-surface-container/50' : ''}`}>
+                                            <span className="text-on-surface-variant line-clamp-3 md:line-clamp-4">"...{finalSelectedSceneText.slice(0, 100)}..."</span>
                                         </div>
 
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setSelectedTemplateId(tpl.id); handleUseTemplate(tpl.id); }}
-                                            className={`w-full py-3 md:py-4 rounded-xl font-medium transition-all duration-300 active:scale-95 text-sm md:text-base relative z-10 ${buttonStyle}`}>
-                                            {isSelected ? '确认使用此模板' : '使用此模板'}
+                                            className={`w-full py-2.5 md:py-4 rounded-xl font-medium transition-all duration-300 active:scale-95 text-xs md:text-base relative z-10 mt-auto ${buttonStyle}`}>
+                                            {isSelected ? '确认使用' : '使用此模板'}
                                         </button>
                                     </div>
                                 )
                             })}
                         </section>
 
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-12 pb-6 w-full">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-6 pb-6 w-full">
                             <Link
                                 to="/gallery"
                                 state={{ intent: selectedType, scene: selectedIndex === -1 ? 'all' : currentIntent.options[selectedIndex].id }}
@@ -355,7 +355,7 @@ export default function Home() {
             </div>
 
             {/* Fixed Floating Action Bar (Screens 1 & 2) */}
-            <div className={`fixed bottom-[130px] md:bottom-[100px] left-0 w-full z-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] transform ${activeScreen > 0 && activeScreen < 3 ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`fixed bottom-[90px] md:bottom-[100px] left-0 w-full z-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] transform ${activeScreen > 0 && activeScreen < 3 ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                 <div className="w-full max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
                     <button
                         onClick={() => setActiveScreen(Math.max(0, activeScreen - 1))}
