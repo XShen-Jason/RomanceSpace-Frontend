@@ -7,11 +7,12 @@ export default function Upgrade() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    
+
     const [configs, setConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [payingId, setPayingId] = useState(null);
-    
+    const [activeDuration, setActiveDuration] = useState(12); // Default to Annual for better conversion
+
     // Polling State
     const orderNoParam = searchParams.get('order_no');
     const [pollStatus, setPollStatus] = useState('Verifying payment status...');
@@ -28,7 +29,7 @@ export default function Upgrade() {
                     const url = `${API_BASE}/api/payment/query?order_no=${orderNoParam}`;
                     const res = await fetch(url);
                     const data = await res.json();
-                    
+
                     if (data.success) {
                         if (data.status === 'success') {
                             setPollStatus('支付成功！您的权益已为您极速发放完毕 🎉');
@@ -92,9 +93,7 @@ export default function Upgrade() {
             });
             const data = await res.json();
             if (data.success && data.payUrl) {
-                // Open payment in a new tab
                 window.open(data.payUrl, '_blank');
-                // Stay on this page for polling
                 toast.success('由于合规要求，请在新打开的页面完成支付。');
             } else {
                 toast.error(data.error || '创建订单失败');
@@ -112,7 +111,7 @@ export default function Upgrade() {
         </div>
     );
 
-    // Render Polling View
+    // --- View Logic ---
     if (orderNoParam) {
         return (
             <div className="w-full min-h-screen pt-[120px] pb-20 bg-surface cosmic-gradient text-on-surface font-body px-5">
@@ -124,8 +123,8 @@ export default function Upgrade() {
                     </div>
                     {!isSuccess && <div className="spinner w-8 h-8 border-4 border-outline-variant/30 border-t-primary rounded-full animate-spin mx-auto mb-6"></div>}
                     {isSuccess && (
-                        <button 
-                            onClick={() => navigate('/myspace')} 
+                        <button
+                            onClick={() => navigate('/myspace')}
                             className="bg-primary text-on-primary px-8 py-3 rounded-xl font-medium transition-transform hover:-translate-y-1 shadow-[0_10px_20px_rgba(224,142,254,0.2)] mt-4"
                         >
                             返回个人中心
@@ -136,184 +135,155 @@ export default function Upgrade() {
         );
     }
 
-    // Render Pricing View
+    // Filter Logic for dynamic package list
+    const filteredConfigs = configs
+        .filter(c => c.duration_months === activeDuration && c.tier !== 'lifetime')
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+    const lifetimeConfigs = configs.filter(c => c.tier === 'lifetime' || c.duration_months === 0);
+
     return (
         <div className="w-full min-h-[100dvh] pt-[100px] md:pt-[120px] pb-10 bg-surface cosmic-gradient text-on-surface font-body relative overflow-hidden">
-            {/* Immersive Background Glow */}
+            {/* Background Effects */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[100px] bg-primary/10 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[120px] bg-secondary/10 pointer-events-none"></div>
 
             <div className="max-w-[1100px] mx-auto px-5 relative z-10">
-                {/* --- Hero Section --- */}
-                <div className="text-center mb-12 lg:mb-20">
+                {/* Hero */}
+                <div className="text-center mb-8">
                     <div className="inline-block px-6 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-medium mb-6 backdrop-blur-md shadow-[0_4px_15px_rgba(224,142,254,0.1)]">
                         ✨ 开启您的专属浪漫空间
                     </div>
-                    <h1 className="font-headline text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-6 leading-tight">
+                    <h1 className="font-headline text-4xl md:text-5xl font-light tracking-tight mb-6 leading-tight text-on-surface">
                         选择最适合您的 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-medium">特权等级</span>
                     </h1>
-                    <p className="text-on-surface-variant text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-                        加入 Pro 会员或合伙人计划，解锁无限创意模板与专属自定义功能，让每一个浪漫时刻都值得被永久铭记。
-                    </p>
                 </div>
 
-                {/* --- Benefit Highlights --- */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 md:mb-24">
-                    {[
-                        { icon: '🎨', title: '无限模板', desc: '解锁全场 100+ 精致浪漫模板，支持一键无感切换。' },
-                        { icon: '⚡', title: '极速加载', desc: '独家 CDN 加速，无论是图片还是 4K 视频均可秒开。' },
-                        { icon: '🔗', title: '专属域名', desc: '拥有自定义二级域名，甚至可以绑定您的独立域名。' },
-                        { icon: '💎', title: '尊贵标识', desc: '全平台尊贵会员标识，头像框及个人主页深度定制。' },
-                    ].map((b, idx) => (
-                        <div key={idx} className="glass-card bg-surface-container-low/30 backdrop-blur-md border border-outline-variant/10 p-6 rounded-3xl hover:bg-surface-container-low/50 hover:-translate-y-1 transition-all duration-300">
-                            <div className="text-3xl md:text-4xl mb-4">{b.icon}</div>
-                            <h3 className="font-headline text-lg font-medium mb-2">{b.title}</h3>
-                            <p className="text-sm text-on-surface-variant leading-relaxed">{b.desc}</p>
-                        </div>
+                {/* Duration Toggle (Fixed Grid) */}
+                <div className="flex justify-center mb-16">
+                    <div className="bg-surface-container-low/40 backdrop-blur-xl border border-outline-variant/10 p-1.5 rounded-2xl grid grid-cols-2 shadow-lg relative min-w-[300px]">
+                        <button
+                            onClick={() => setActiveDuration(1)}
+                            className={`relative z-10 px-8 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${activeDuration === 1 ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                            按月计费
+                        </button>
+                        <button
+                            onClick={() => setActiveDuration(12)}
+                            className={`relative z-10 px-8 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${activeDuration === 12 ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'}`}
+                        >
+                            按年预览 <span className="ml-1 text-[10px] opacity-80 bg-primary/20 px-1.5 py-0.5 rounded-full border border-primary/10">立省20%</span>
+                        </button>
+                        <div 
+                            className="absolute top-1.5 h-[calc(100%-12px)] w-[calc(50%-6px)] bg-gradient-to-r from-primary to-secondary rounded-xl transition-all duration-500 ease-out shadow-lg"
+                            style={{ 
+                                left: '6px',
+                                transform: activeDuration === 1 ? 'translateX(0)' : 'translateX(100%)' 
+                            }}
+                        ></div>
+                    </div>
+                </div>
+
+                {/* Pricing Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch mb-20">
+                    <PricingCard
+                        title="体验用户"
+                        price={0}
+                        tier="free"
+                        subtitle="基础功能 · 永久免费"
+                        features={[
+                            { text: '精选免费模板库', active: true },
+                            { text: '1 个专属域名配额', active: true },
+                            { text: '标准 CDN 加载速度', active: true },
+                            { text: '移除底部版权标识', active: false },
+                            { text: '绑定顶级域名', active: false },
+                        ]}
+                        buttonText="免费开始制作"
+                        onAction={() => navigate('/builder')}
+                    />
+
+                    {filteredConfigs.map(c => (
+                        <PricingCard
+                            key={c.id}
+                            title={c.display_name || (c.tier === 'pro' ? "高级会员 Pro" : "进阶空间 Partner")}
+                            price={c.is_renewal ? (c.renewal_price || c.base_price) : (c.is_returning ? (c.base_price) : (c.first_month_price || c.base_price))}
+                            originalPrice={c.base_price}
+                            tier={c.tier}
+                            subtitle={`全项权益 · ${c.duration_months}个月有效期`}
+                            discountLabel={c.discount_label}
+                            isPopular={c.tier === 'pro'}
+                            features={c.features || [
+                                { text: '100% 模板库自由切换', active: true },
+                                { text: `${c.tier === 'pro' ? '3' : '15'} 个专属域名配额`, active: true },
+                                { text: '动态粒子特效背景自由定制', active: true },
+                                { text: '顶级域名映射绑定', active: c.tier === 'partner' },
+                            ]}
+                            buttonText={payingId === c.id ? "正在调起..." : (c.is_renewal ? "立即续费" : "开启特权")}
+                            onAction={() => handleCheckout(c)}
+                            isPaying={payingId === c.id}
+                        />
+                    ))}
+
+                    {lifetimeConfigs.map(c => (
+                        <PricingCard
+                            key={c.id}
+                            title={c.display_name || "终身合伙人"}
+                            price={c.is_renewal ? (c.renewal_price || c.base_price) : (c.is_returning ? (c.base_price) : (c.first_month_price || c.base_price))}
+                            originalPrice={c.base_price}
+                            tier={c.tier}
+                            subtitle={`尊贵特权 · 永久生效`}
+                            discountLabel={c.discount_label || "限时终身价"}
+                            features={c.features || [
+                                { text: '100% 模板库自由切换', active: true },
+                                { text: '30+ 个专属域名配额', active: true },
+                                { text: '支持绑定个人顶级域名', active: true },
+                                { text: '优先体验内测新功能', active: true },
+                                { text: '专属 VIP 极速响应服务', active: true },
+                            ]}
+                            buttonText={payingId === c.id ? "正在调起..." : (c.is_renewal ? "立即续费" : "开启特权")}
+                            onAction={() => handleCheckout(c)}
+                            isPaying={payingId === c.id}
+                        />
                     ))}
                 </div>
-                
-                {/* --- Pricing Grid --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch mb-20">
-                    {/* Free Tier (Static Comparison) */}
-                    <div className="glass-card flex flex-col bg-surface-container-low/20 backdrop-blur-xl border border-outline-variant/20 rounded-[2rem] p-8 lg:p-10 transition-all duration-500 hover:-translate-y-2 hover:border-outline-variant/40 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)]">
-                        <div className="text-center mb-8">
-                            <h2 className="font-headline text-2xl font-medium mb-2">体验用户</h2>
-                            <p className="text-on-surface-variant text-sm font-light">基础功能 · 永久免费</p>
-                        </div>
-                        
-                        <div className="text-center py-8 border-y border-outline-variant/10 mb-8">
-                            <div className="text-5xl lg:text-6xl font-headline font-light tracking-tight mb-4 flex justify-center items-start">
-                                <span className="text-xl lg:text-2xl mt-2 mr-1">¥</span>0
-                            </div>
-                            <div className="inline-block px-4 py-1.5 rounded-lg bg-surface-container border border-outline-variant/10 text-on-surface-variant text-xs font-medium">
-                                无需支付，立即开始
-                            </div>
-                        </div>
-                        
-                        <div className="flex-1 mb-10">
-                            <div className="text-xs font-medium text-on-surface-variant uppercase tracking-widest mb-6">基础权限：</div>
-                            <ul className="space-y-4">
+
+                {/* Comparison Table */}
+                <div className="mb-24">
+                    <h2 className="font-headline text-2xl text-center mb-10">功能权益深度对比</h2>
+                    <div className="glass-card bg-surface-container-low/20 backdrop-blur-xl border border-outline-variant/10 rounded-[2rem] overflow-hidden">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-surface-container-low/40">
+                                    <th className="p-6 text-sm font-medium text-on-surface-variant">特权项</th>
+                                    <th className="p-6 text-sm font-medium text-center">免费版</th>
+                                    <th className="p-6 text-sm font-medium text-center text-primary">Pro 版</th>
+                                    <th className="p-6 text-sm font-medium text-center text-secondary">合伙人版</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-sm font-light">
                                 {[
-                                    { l: '精选免费模板库', p: true },
-                                    { l: '1 个专属域名配额', p: true },
-                                    { l: '每日 5 次修改限制', p: true },
-                                    { l: '标准 CDN 加载速度', p: true },
-                                    { l: '支持 480+ BGM 库', p: true },
-                                    { l: '移除底部版权标识', p: false },
-                                    { l: '高级粒子特效定制', p: false },
-                                ].map((item, i) => (
-                                    <li key={i} className={`flex items-start gap-3 ${item.p ? '' : 'opacity-30'}`}>
-                                        <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] mt-0.5 ${item.p ? 'bg-surface-variant text-on-surface' : 'bg-surface-container-highest/50 text-outline'}`}>
-                                            {item.p ? '✓' : '✕'}
-                                        </span>
-                                        <span className={`text-sm font-light ${!item.p && 'line-through'}`}>{item.l}</span>
-                                    </li>
+                                    { name: '域名/项目配额', free: '1 个', pro: '3 个', partner: '15 个' },
+                                    { name: '模板使用范围', free: '基础免费模板', pro: '全场模板通用', partner: '全场模板通用' },
+                                    { name: '每日修改上限', free: '3 次/日', pro: '10 次/日', partner: '100+ 次/日' },
+                                    { name: '专属二级域名', free: '✓', pro: '✓', partner: '✓' },
+                                    { name: '自定义顶级域名', free: '✕', pro: '✕', partner: '✓ (提供解析指导)' },
+                                    { name: '移除底部版权', free: '✕', pro: '✓', partner: '✓' },
+                                    { name: '新功能优先体验', free: '✕', pro: '✕', partner: '✓' },
+                                ].map((row, i) => (
+                                    <tr key={i} className="border-t border-outline-variant/5 hover:bg-surface-container-low/30 transition-colors">
+                                        <td className="p-5 font-medium text-on-surface-variant">{row.name}</td>
+                                        <td className="p-5 text-center">{row.free}</td>
+                                        <td className="p-5 text-center font-medium text-primary/80">{row.pro}</td>
+                                        <td className="p-5 text-center font-medium text-secondary/80">{row.partner}</td>
+                                    </tr>
                                 ))}
-                            </ul>
-                        </div>
-
-                        <button 
-                            onClick={() => navigate('/builder')}
-                            className="w-full py-4 rounded-xl font-medium bg-surface-variant text-on-surface border border-outline-variant/20 hover:bg-surface-container-high transition-colors"
-                        >
-                            免费开始制作
-                        </button>
+                            </tbody>
+                        </table>
                     </div>
-
-                    {[...configs]
-                        .sort((a, b) => (a.limit || 0) - (b.limit || 0))
-                        .map(c => {
-                        const isPro = c.tier === 'pro';
-                        const isPartner = c.tier === 'partner';
-                        const isLifetime = c.tier === 'lifetime';
-
-                        const accentColorHex = c.accentColor || (isPro ? '#e879f9' : '#818cf8'); // primary vs secondary
-                        const gradientFrom = isPro ? 'from-primary' : 'from-secondary';
-                        const gradientTo = isPro ? 'to-primary-container' : 'to-secondary-container';
-                        
-                        return (
-                            <div key={c.id} className={`glass-card flex flex-col relative bg-surface-container-low/30 backdrop-blur-xl rounded-[2rem] p-8 lg:p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
-                                isPro ? 'border border-primary/40 shadow-[0_0_30px_rgba(224,142,254,0.15)] ring-1 ring-primary/20' : 
-                                isPartner || isLifetime ? 'border border-secondary/40 shadow-[0_0_30px_rgba(129,140,248,0.15)] ring-1 ring-secondary/20' : 
-                                'border border-outline-variant/20'
-                            }`}>
-                                {c.discount_label && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                        <div className={`text-white px-5 py-1.5 rounded-full text-xs font-bold shadow-[0_10px_20px_rgba(0,0,0,0.2)] whitespace-nowrap bg-gradient-to-r ${gradientFrom} ${gradientTo}`}>
-                                            🔥 {c.discount_label}
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                <div className="text-center mb-8">
-                                    <h2 className="font-headline text-2xl font-medium mb-2">{c.display_name || c.tier.toUpperCase()}</h2>
-                                    <p className="text-on-surface-variant text-sm font-light">全项权益 · {c.duration_months} 个月有效期</p>
-                                </div>
-                                
-                                <div className="text-center py-8 border-y border-outline-variant/10 mb-8">
-                                    <div className="line-through text-outline text-lg mb-1">
-                                        ¥ {(c.base_price / 100).toFixed(2)}
-                                    </div>
-                                    <div className="text-5xl lg:text-6xl font-headline font-light tracking-tight mb-4 flex justify-center items-start text-on-surface">
-                                        <span className="text-xl lg:text-2xl mt-2 mr-1">¥</span>
-                                        {c.is_renewal 
-                                            ? (c.renewal_price / 100).toFixed(2) 
-                                            : (c.is_returning 
-                                                ? (c.base_price / 100).toFixed(2) 
-                                                : (c.first_month_price / 100).toFixed(2))
-                                        }
-                                    </div>
-                                    <div className={`inline-block px-4 py-1.5 rounded-lg text-xs font-medium text-white shadow-sm`}
-                                         style={{ backgroundColor: accentColorHex }}>
-                                        {c.is_renewal 
-                                            ? '您当前的续费特惠价' 
-                                            : (c.is_returning 
-                                                ? '当前等级标准价格' 
-                                                : `首月入坑价 (次月 ¥${(c.renewal_price / 100).toFixed(2)} 续费)`)
-                                        }
-                                    </div>
-                                </div>
-                                
-                                <div className="flex-1 mb-10">
-                                    <div className="text-xs font-medium text-on-surface-variant uppercase tracking-widest mb-6">等级核心权益：</div>
-                                    <ul className="space-y-4">
-                                        {((Array.isArray(c.features) && c.features.length > 0) ? c.features : [
-                                            { text: '100% 模板库自由切换', active: true },
-                                            { text: `${isPro ? '3' : isPartner ? '10' : '99'} 个域名配额`, active: true },
-                                            { text: '专属 7x24h 技术支持', active: isPartner || isLifetime },
-                                            { text: '全库 480+ 款无损 BGM 库', active: true },
-                                            { text: '动态粒子特效背景自由定制', active: true },
-                                            { text: '支持绑定个人顶级域名', active: isPartner || isLifetime },
-                                        ]).map((item, i) => (
-                                            <li key={i} className={`flex items-start gap-3 ${item.active !== false ? '' : 'opacity-30'}`}>
-                                                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] mt-0.5 text-white ${!item.active ? 'bg-surface-container-highest/50 !text-outline' : ''}`}
-                                                      style={{ backgroundColor: item.active !== false ? accentColorHex : undefined }}>
-                                                    {item.active !== false ? '✓' : '✕'}
-                                                </span>
-                                                <span className={`text-sm font-light ${item.active === false && 'line-through'}`}>{item.text}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <button 
-                                    disabled={!!payingId}
-                                    onClick={() => handleCheckout(c, 'wechat')}
-                                    className={`w-full py-4 rounded-xl font-medium text-white transition-all duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_15px_25px_rgba(0,0,0,0.3)] hover:-translate-y-1 bg-gradient-to-br ${gradientFrom} ${gradientTo} disabled:opacity-70 disabled:cursor-not-allowed`}
-                                >
-                                    {payingId === c.id ? '正在唤起支付...' : (c.is_renewal ? '立即续费特权' : '立即开启特权')}
-                                </button>
-                                <p className="text-center text-[10px] text-on-surface-variant mt-3 opacity-80">
-                                    安全加密支付 · 权益秒到账
-                                </p>
-                            </div>
-                        );
-                    })}
                 </div>
-                
-                {/* --- FAQ / Footer --- */}
-                <div className="mt-16 pt-12 border-t border-outline-variant/10 pb-8">
+
+                {/* FAQ */}
+                <div className="pt-12 border-t border-outline-variant/10 pb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div>
                             <h4 className="font-headline text-xl font-medium mb-6">常见问题解答</h4>
@@ -350,6 +320,78 @@ export default function Upgrade() {
                     © 2026 RomanceSpace · 让浪漫不再有边界
                 </div>
             </div>
+        </div>
+    );
+}
+
+
+
+// Sub-component for individual pricing card
+function PricingCard({ title, price, originalPrice, tier, subtitle, discountLabel, isPopular, features, buttonText, onAction, isPaying }) {
+    const isPro = tier === 'pro';
+    const isPartner = tier === 'partner' || tier === 'lifetime';
+
+    const gradientFrom = isPro ? 'from-primary' : (isPartner ? 'from-secondary' : 'from-surface-variant');
+    const gradientTo = isPro ? 'to-primary-container' : (isPartner ? 'to-secondary-container' : 'to-surface-container-high');
+    const accentColor = isPro ? 'var(--primary)' : (isPartner ? 'var(--secondary)' : 'var(--outline)');
+
+    return (
+        <div className={`glass-card flex flex-col relative bg-surface-container-low/30 backdrop-blur-xl rounded-[2.5rem] p-8 lg:p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl border ${isPopular ? 'border-primary/40 ring-1 ring-primary/20 shadow-[0_0_30px_rgba(224,142,254,0.1)]' : 'border-outline-variant/20'
+            }`}>
+            {discountLabel && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <div className={`text-white px-5 py-1.5 rounded-full text-xs font-bold shadow-lg whitespace-nowrap bg-gradient-to-r ${gradientFrom} ${gradientTo}`}>
+                        🔥 {discountLabel}
+                    </div>
+                </div>
+            )}
+
+            <div className="text-center mb-8">
+                <h2 className="font-headline text-2xl font-medium mb-2">{title}</h2>
+                <p className="text-on-surface-variant text-sm font-light">{subtitle}</p>
+            </div>
+
+            <div className="text-center py-8 border-y border-outline-variant/10 mb-8 flex flex-col items-center justify-center min-h-[180px]">
+                {/* Fixed height placeholder for original price to maintain alignment */}
+                <div className="h-7 mb-1">
+                    {originalPrice > price && (
+                        <div className="line-through text-outline text-lg opacity-50">
+                            ¥ {(originalPrice / 100).toFixed(2)}
+                        </div>
+                    )}
+                </div>
+                
+                <div className="text-5xl lg:text-7xl font-headline font-light tracking-tight mb-4 flex justify-center items-start text-on-surface leading-none">
+                    <span className="text-xl lg:text-2xl mt-2 mr-1">¥</span>
+                    {(price / 100).toFixed(2)}
+                </div>
+
+                <div className="inline-block px-4 py-1.5 rounded-lg bg-surface-container border border-outline-variant/10 text-on-surface-variant text-[10px] font-medium tracking-wider uppercase">
+                    {price === 0 ? '无需支付，立即开始' : '安全加密支付 · 权益秒到'}
+                </div>
+            </div>
+
+            <div className="flex-1 mb-10">
+                <ul className="space-y-4">
+                    {features.map((item, i) => (
+                        <li key={i} className={`flex items-start gap-3 ${item.active ? '' : 'opacity-30'}`}>
+                            <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] mt-0.5 ${item.active ? 'text-white' : 'bg-surface-container-highest/50 text-outline'}`}
+                                style={{ backgroundColor: item.active ? accentColor : undefined }}>
+                                {item.active ? '✓' : '✕'}
+                            </span>
+                            <span className={`text-sm font-light ${!item.active && 'line-through'}`}>{item.text}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <button
+                disabled={isPaying}
+                onClick={onAction}
+                className={`w-full py-4 rounded-2xl font-medium text-white transition-all duration-300 shadow-xl hover:-translate-y-1 bg-gradient-to-br ${gradientFrom} ${gradientTo} disabled:opacity-70 disabled:cursor-not-allowed`}
+            >
+                {buttonText}
+            </button>
         </div>
     );
 }
