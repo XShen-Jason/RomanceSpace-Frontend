@@ -303,9 +303,9 @@ export default function Auth() {
                                 placeholder="朋友的邀请码" maxLength={8} />
                         </div>
                         <div className="auth-disclaimer" style={{ background: 'rgba(0,0,0,0.02)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #ff477e', fontSize: '12px' }}>
-                            注册即代表您同意使用条款。基础版每账号可免费制作 <b>1</b> 个专属网址。<br />
-                            <span style={{ opacity: 0.8, display: 'block', marginTop: '4px' }}>
-                                💡 若连续 180 天无人访问，该网址将被自动回收以节约服务器资源。
+                            注册即代表同意我们的「浪漫约定」。最初，每人默认拥有一座免费的专属回忆岛屿（1个空间）。<br />
+                            <span style={{ opacity: 0.8, display: 'block', marginTop: '4px', color: 'var(--primary-color, #ff477e)' }}>
+                                💡 有朋友推荐？快填上 Ta 的专属密码吧！当您成功点亮了第一个作品，我们会悄悄为你们俩送上「无限特权」体验期（最高能囤满整整一个月哦）。
                             </span>
                         </div>
                         <button id="btn-register-submit" type="submit" className="w-full mt-4 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-medium text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20" disabled={loading}>

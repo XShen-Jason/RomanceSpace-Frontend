@@ -173,22 +173,22 @@ export default function Home() {
                 style={{ transform: `translateY(-${activeScreen * 100}dvh)` }}
             >
                 {/* ─── SCREEN 0: Hero Intent Selection ─── */}
-                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[60px] md:pt-[80px] pb-[90px] md:pb-[24px] relative overflow-y-auto overflow-x-hidden md:overflow-hidden custom-scrollbar">
+                <div className="w-full h-[100dvh] shrink-0 flex flex-col items-center pt-[60px] md:pt-[80px] pb-[90px] md:pb-[24px] relative overflow-y-auto md:overflow-y-auto overflow-x-hidden custom-scrollbar">
                     <div className="absolute top-1/4 -left-20 w-[800px] h-[800px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(224,142,254,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] rounded-full pointer-events-none z-0" style={{ background: 'radial-gradient(circle, rgba(144,148,250,0.15) 0%, transparent 60%)' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] pointer-events-none z-0" style={{ background: 'radial-gradient(ellipse at center, rgba(36,32,74,0.4) 0%, transparent 60%)' }}></div>
 
-                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-2 md:py-4">
-                        <div className="text-center max-w-4xl w-full mb-4 md:mb-10 lg:mb-12 leading-relaxed">
-                            <h1 className="font-headline text-3xl md:text-6xl lg:text-[5rem] font-light tracking-tight text-on-surface mb-2 md:mb-6 leading-tight">
-                                有些情绪，值得被<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">认真安放</span>
+                    <main className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 py-2 md:py-4 mt-8 md:mt-24 mb-16">
+                        <div className="text-center max-w-4xl w-full mb-6 md:mb-10 lg:mb-12 leading-relaxed">
+                            <h1 className="font-headline text-3xl md:text-6xl lg:text-[4.5rem] font-light tracking-tight text-on-surface mb-3 md:mb-6 leading-tight">
+                                有些心象，值得被<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">温柔安放</span>
                             </h1>
                             <p className="font-body text-sm md:text-xl text-on-surface-variant font-light tracking-wide max-w-2xl mx-auto opacity-90">
-                                顺着心的指引，点击最契合你当下的选择
+                                倾听内心的声音，挑选一个最贴近此刻心语的角落
                             </p>
                         </div>
 
-                        <div className="w-full max-w-[1100px] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 mx-auto pb-4 md:pb-0">
+                        <div className="w-full max-w-[1100px] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 mx-auto pb-4 md:pb-8">
                             {Object.entries(INTENT_DATA).map(([key, data]) => (
                                 <button
                                     key={key}

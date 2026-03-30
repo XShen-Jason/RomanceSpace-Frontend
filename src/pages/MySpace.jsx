@@ -53,6 +53,8 @@ export default function MySpace() {
             dailyUsedEdits: 0,
             maxDailyEdits: 5,
             inviteBonus: 0,
+            inviteBonusDays: 0,
+            inviteCount: 0,
             bg: '#f0e6ee',
             color: 'var(--pink)'
         };
@@ -346,14 +348,17 @@ export default function MySpace() {
                                     </div>
                                     <div className="flex flex-row gap-2 md:gap-3">
                                         <div className="flex-1 p-2 md:p-3 bg-surface-container-high/40 rounded-lg md:rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
-                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">成功邀请</p>
-                                            <p className="text-base md:text-xl font-headline font-bold text-on-surface leading-none mt-1">{inviteCount} <span className="text-[9px] font-normal">位</span></p>
+                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">同行见证人 (满10位封顶)</p>
+                                            <p className="text-base md:text-xl font-headline font-bold text-on-surface leading-none mt-1">{status.inviteCount !== undefined ? status.inviteCount : inviteCount} <span className="text-[9px] font-normal">位伙伴</span></p>
                                         </div>
                                         <div className="flex-1 p-2 md:p-3 bg-surface-container-high/40 rounded-lg md:rounded-xl border border-outline-variant/10 text-center flex flex-col justify-center shadow-sm">
-                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">奖励额度</p>
-                                            <p className="text-base md:text-xl font-headline font-bold text-primary leading-none mt-1">+{inviteCount} <span className="text-[9px] font-normal">PAGES</span></p>
+                                            <p className="text-[8px] md:text-[10px] text-on-surface-variant mb-0.5 leading-none opacity-70">积攒的会员时光</p>
+                                            <p className="text-base md:text-xl font-headline font-bold text-primary leading-none mt-1">+{status.inviteBonusDays || 0} <span className="text-[9px] font-normal">天体验特权</span></p>
                                         </div>
                                     </div>
+                                    <p className="text-[10px] text-on-surface-variant/70 leading-relaxed text-center">
+                                        💌 每集齐 5 位好友来这里安放故事，我们会特别给您额外开辟一块新天地（也就是+1个空间总额度哦，最多送2个）。独乐乐不如众乐乐 ～
+                                    </p>
                                 </div>
                             ) : (
                                 <button
