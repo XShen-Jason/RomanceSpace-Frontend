@@ -543,7 +543,7 @@ export default function Builder() {
                             </Link>
                         </div>
 
-                        <form id="builder-form" onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 w-full relative z-10 px-1">
+                        <form id="builder-form" onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 w-full relative z-10 px-1 overflow-y-auto scrollbar-hide pb-32">
 
                             {/* Fixed Top Controls & Warnings */}
                             <div className="flex flex-col gap-4 md:gap-6 shrink-0 w-full mb-4 md:mb-6">
@@ -627,7 +627,7 @@ export default function Builder() {
 
                             {/* Scrollable Dynamic Fields Area container */}
                             {selectedTemplate && !selectedTemplate.static && (selectedTemplate.fields ?? []).length > 0 && (
-                                <div className="flex-1 flex flex-col bg-surface/30 backdrop-blur-md border border-outline-variant/20 shadow-[inset_0_4px_24px_rgba(0,0,0,0.05)] rounded-2xl mb-[130px] w-full rounded-b-3xl overflow-hidden">
+                                <div className="flex flex-col bg-surface/30 backdrop-blur-md border border-outline-variant/20 shadow-[inset_0_4px_24px_rgba(0,0,0,0.05)] rounded-2xl w-full rounded-b-3xl shrink-0">
 
                                     {/* Fixed Header */}
                                     <div className="p-5 md:p-8 pb-4 shrink-0 border-b border-outline-variant/10">
@@ -638,7 +638,7 @@ export default function Builder() {
                                     </div>
 
                                     {/* Scrollable Fields */}
-                                    <div className="flex-1 overflow-y-auto scrollbar-hide p-5 md:p-8 pt-6 flex flex-col gap-6 md:gap-8">
+                                    <div className="p-5 md:p-8 pt-6 flex flex-col gap-6 md:gap-8">
                                         {selectedTemplate.fields.map((f) => {
                                             const key = typeof f === 'string' ? f : (f.id || f.key);
                                             const label = typeof f === 'string' ? (FIELD_LABELS[f] || f) : (f.label || f.id || f.key);
@@ -717,7 +717,7 @@ export default function Builder() {
                     </section>
 
                     {/* Right Panel: Live Preview iframe (BSR) */}
-                    <section className="w-full lg:w-[380px] flex flex-col h-auto aspect-[9/19.5] max-h-[82vh] shrink-0 mx-auto lg:my-auto">
+                    <section className="w-full lg:w-auto lg:max-w-[380px] flex flex-col h-auto lg:h-full max-h-[82vh] lg:max-h-[800px] aspect-[9/19.5] shrink-0 mx-auto lg:my-auto py-2">
                         <div className="flex-1 glass-panel rounded-xl overflow-hidden border border-outline-variant/20 relative shadow-2xl flex flex-col group transition-all duration-500 hover:border-primary/30">
                             {/* Preview Header Overlay */}
                             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-surface/90 to-transparent z-10 p-6 pointer-events-none transition-opacity duration-300 group-hover:opacity-40">
