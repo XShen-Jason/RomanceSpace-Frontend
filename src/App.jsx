@@ -3,17 +3,41 @@ import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-d
 import { Toaster, toast } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 
+/**
+ * lazyWithRetry: wraps lazy() so that if a chunk fails to load
+ * (e.g. after a new deploy caused the hash to change), the page
+ * does a ONE-TIME hard reload to fetch the latest index.html and
+ * fresh chunk files, instead of showing an endless error.
+ */
+function lazyWithRetry(factory) {
+    return lazy(() =>
+        factory().catch((err) => {
+            // Only auto-reload once per session to avoid infinite loops.
+            const reloadKey = 'chunk_reload_attempted';
+            if (!sessionStorage.getItem(reloadKey)) {
+                sessionStorage.setItem(reloadKey, '1');
+                window.location.reload();
+                // Return a never-resolving promise so React doesn't
+                // render a broken fallback while the reload is in flight.
+                return new Promise(() => {});
+            }
+            // Second failure: surface the real error.
+            throw err;
+        })
+    );
+}
+
 // Code-split all pages: only load the chunk for the current route
-const Home = lazy(() => import('./pages/Home.jsx'));
-const Gallery = lazy(() => import('./pages/Gallery.jsx'));
-const Builder = lazy(() => import('./pages/Builder.jsx'));
-const Admin = lazy(() => import('./pages/Admin.jsx'));
-const Upgrade = lazy(() => import('./pages/Upgrade.jsx'));
-const Orders = lazy(() => import('./pages/Orders.jsx'));
-const Auth = lazy(() => import('./pages/Auth.jsx'));
-const AuthCallback = lazy(() => import('./pages/AuthCallback.jsx'));
-const MySpace = lazy(() => import('./pages/MySpace.jsx'));
-const Preview = lazy(() => import('./pages/Preview.jsx'));
+const Home = lazyWithRetry(() => import('./pages/Home.jsx'));
+const Gallery = lazyWithRetry(() => import('./pages/Gallery.jsx'));
+const Builder = lazyWithRetry(() => import('./pages/Builder.jsx'));
+const Admin = lazyWithRetry(() => import('./pages/Admin.jsx'));
+const Upgrade = lazyWithRetry(() => import('./pages/Upgrade.jsx'));
+const Orders = lazyWithRetry(() => import('./pages/Orders.jsx'));
+const Auth = lazyWithRetry(() => import('./pages/Auth.jsx'));
+const AuthCallback = lazyWithRetry(() => import('./pages/AuthCallback.jsx'));
+const MySpace = lazyWithRetry(() => import('./pages/MySpace.jsx'));
+const Preview = lazyWithRetry(() => import('./pages/Preview.jsx'));
 
 /**
  * ProtectedRoute: Logic-based guard for authenticated and role-based routes.
