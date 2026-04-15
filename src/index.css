@@ -23,6 +23,15 @@
     --shadow-lg: 0 12px 40px rgba(214, 51, 108, 0.12);
     --font: 'Inter', system-ui, -apple-system, sans-serif;
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    /* Mood Space 深色主题滚动条 */
+    --scroll-track: rgba(18, 16, 46, 0.92);
+    --scroll-thumb: rgba(224, 142, 254, 0.38);
+    --scroll-thumb-hover: rgba(224, 142, 254, 0.58);
+    --scroll-border: rgba(13, 10, 39, 0.85);
+    /* 浅色区块（如 Admin 卡片内） */
+    --scroll-track-light: #f1f5f9;
+    --scroll-thumb-light: rgba(100, 116, 139, 0.4);
+    --scroll-thumb-light-hover: rgba(71, 85, 105, 0.55);
 }
 
 body {
@@ -35,6 +44,9 @@ body {
     text-rendering: optimizeLegibility;
     /* Prevent accidental zoom */
     touch-action: manipulation;
+    overscroll-behavior-y: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
     /* Handle safe areas */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -44,6 +56,53 @@ body {
 html {
     height: -webkit-fill-available;
     background-color: #0d0a27;
+    /* 减少整页「下拉刷新 / 弹性回弹」把 Builder 底栏手势误判成浏览器刷新 */
+    overscroll-behavior-y: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+@media (min-width: 768px) {
+    html {
+        scrollbar-gutter: stable;
+    }
+}
+
+html::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+html::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+    border-radius: 100px;
+}
+html::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--scroll-thumb), rgba(144, 148, 250, 0.32));
+    border-radius: 100px;
+    border: 2px solid var(--scroll-border);
+}
+html::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--scroll-thumb-hover), rgba(144, 148, 250, 0.45));
+}
+html::-webkit-scrollbar-corner {
+    background: var(--scroll-track);
+}
+
+body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+body::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+    border-radius: 100px;
+}
+body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--scroll-thumb), rgba(144, 148, 250, 0.32));
+    border-radius: 100px;
+    border: 2px solid var(--scroll-border);
+}
+body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--scroll-thumb-hover), rgba(144, 148, 250, 0.45));
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
@@ -964,24 +1023,48 @@ input:disabled + .slider:before {
     scrollbar-width: none;
 }
 
-/* ── Custom Scrollbar for elegant PC appearance ── */
+/* ── 内嵌滚动区：与 Mood Space 深色主题一致 ── */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(150, 150, 150, 0.25);
+    background: rgba(13, 10, 39, 0.35);
     border-radius: 10px;
 }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--scroll-thumb), rgba(144, 148, 250, 0.28));
+    border-radius: 10px;
+    border: 1px solid rgba(13, 10, 39, 0.5);
+}
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(150, 150, 150, 0.4);
+    background: linear-gradient(180deg, var(--scroll-thumb-hover), rgba(144, 148, 250, 0.42));
 }
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(150, 150, 150, 0.25) transparent;
+    scrollbar-color: var(--scroll-thumb) rgba(13, 10, 39, 0.4);
+}
+
+/* ── 浅色卡片内列表（如 Admin） ── */
+.custom-scrollbar-light::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar-light::-webkit-scrollbar-track {
+    background: var(--scroll-track-light);
+    border-radius: 8px;
+}
+.custom-scrollbar-light::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb-light);
+    border-radius: 8px;
+    border: 2px solid var(--scroll-track-light);
+}
+.custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-light-hover);
+}
+.custom-scrollbar-light {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb-light) var(--scroll-track-light);
 }
 
 /* ── Seamless Builder Transitions ────────────────────────────────────────── */

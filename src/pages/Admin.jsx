@@ -833,7 +833,7 @@ export default function Admin() {
                             {existingTemplates.length === 0 ? (
                                 <p style={{ textAlign: 'center', color: '#666' }}>暂无模板</p>
                             ) : (
-                                <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                                <div className="custom-scrollbar-light" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                                     <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                                         <thead>
                                             <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
